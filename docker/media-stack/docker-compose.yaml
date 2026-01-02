@@ -1,0 +1,203 @@
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8888:8888/tcp # HTTP Proxy
+      - 8080:8080 # qBittorrent Web UI
+      - 9696:9696 # Prowlarr Web UI
+      - 8989:8989 # Sonarr Web UI
+      - 7878:7878 # Radarr Web UI
+      - 8686:8686 # Lidarr Web UI
+      - 6767:6767 # Bazarr Web UI
+      - 9705:9705 # Huntarr Web UI
+      - 11011:11011 # Cleanuparr Web UI
+      - 8787:8787 # Bookshelf (Readarr)
+      - 8191:8191 # FlareSolverr
+      - 6881:6881 # TCP
+      - 6881:6881/udp # UDP
+    volumes:
+      - /opt/stacks/gluetun/config:/gluetun
+    environment:
+      - LOG_LEVEL=debug
+      - VPN_SERVICE_PROVIDER=surfshark
+      - VPN_TYPE=openvpn
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - OPENVPN_PROTOCOL=udp
+      - OPENVPN_MSSFIX=1300
+      - SERVER_COUNTRIES=Netherlands
+      - TZ=${TIMEZONE}
+      - DNS_ADDRESS=8.8.8.8
+    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+      - WEBUI_PORT=8080
+    volumes:
+      - /opt/stacks/qbittorrent/config:/config
+      - ${DATA_LOCATION}:/data
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/prowlarr/config:/config
+    restart: unless-stopped
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=${TIMEZONE}
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/sonarr/config:/config
+      - ${DATA_LOCATION}:/data
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/radarr/config:/config
+      - ${DATA_LOCATION}:/data
+    restart: unless-stopped
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/bazarr/config:/config
+      - ${DATA_LOCATION}:/data
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/lidarr/config:/config
+      - ${DATA_LOCATION}:/data
+    restart: unless-stopped
+
+  readarr:
+    image: ghcr.io/pennydreadful/bookshelf:hardcover
+    container_name: readarr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/readarr/config:/config
+      - ${DATA_LOCATION}:/data
+    restart: unless-stopped
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TIMEZONE}
+    ports:
+      - 5055:5055
+    volumes:
+      - /opt/stacks/jellyseerr/config:/app/config
+    depends_on:
+      - gluetun
+      - sonarr
+      - radarr
+    restart: unless-stopped
+
+  huntarr:
+    image: ghcr.io/plexguide/huntarr:latest
+    container_name: huntarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/huntarr/config:/config
+    restart: unless-stopped
+
+  cleanuparr:
+    image: ghcr.io/cleanuparr/cleanuparr:latest
+    container_name: cleanuparr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+      - PORT=11011
+    volumes:
+      - /opt/stacks/cleanuparr/config:/config
+    restart: unless-stopped
