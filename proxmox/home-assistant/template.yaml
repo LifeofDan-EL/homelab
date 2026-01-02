@@ -1,0 +1,258 @@
+- sensor:
+    # Growatt Output Power
+    - name: "Growatt Output Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_output_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_output_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt Battery Power
+    - name: "Growatt Battery Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_battery_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_battery_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt PV1 Charge Power
+    - name: "Growatt PV1 Charge Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_pv1_charge_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_pv1_charge_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt PV2 Charge Power
+    - name: "Growatt PV2 Charge Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_pv2_charge_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_pv2_charge_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt Load Power
+    - name: "Growatt Load Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_load_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_load_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt AC Charge Power
+    - name: "Growatt AC Charge Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_ac_charge_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_ac_charge_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt Work Time Total
+    - name: "Growatt Work Time Total"
+      unit_of_measurement: "Hours"
+      state_class: measurement
+      state: >
+        {% set high = states('sensor.growatt_work_time_total_high') | int(0) %}
+        {% set low = states('sensor.growatt_work_time_total_low') | int(0) %}
+        {% set total_seconds = ((high * 65536) + low) * 0.5 %}
+        {{ (total_seconds / 3600) | round(2) }} # Convert seconds to hours
+
+    # Growatt AC Input Power
+    - name: "Growatt AC Input Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_ac_input_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_ac_input_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+      # Growatt Solar Energy Today
+    - name: "Growatt Solar Energy Today"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_solar_energy_today_high') | int(0) %}
+        {% set low = states('sensor.growatt_solar_energy_today_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt Solar Energy Total
+    - name: "Growatt Solar Energy Total"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_solar_energy_total_high') | int(0) %}
+        {% set low = states('sensor.growatt_solar_energy_total_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt AC Charge Energy Today
+    - name: "Growatt AC Charge Energy Today"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_ac_charge_energy_today_high') | int(0) %}
+        {% set low = states('sensor.growatt_ac_charge_energy_today_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt AC Charge Energy Total
+    - name: "Growatt AC Charge Energy Total"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_ac_charge_energy_total_high') | int(0) %}
+        {% set low = states('sensor.growatt_ac_charge_energy_total_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt AC Discharge Power
+    - name: "Growatt AC Discharge Power"
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >
+        {% set high = states('sensor.growatt_ac_discharge_power_high') | int(0) %}
+        {% set low = states('sensor.growatt_ac_discharge_power_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt AC Discharge Energy Today
+    - name: "Growatt AC Discharge Energy Today"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_ac_discharge_energy_today_high') | int(0) %}
+        {% set low = states('sensor.growatt_ac_discharge_energy_today_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt AC Discharge Energy Total
+    - name: "Growatt AC Discharge Energy Total"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_ac_discharge_energy_total_high') | int(0) %}
+        {% set low = states('sensor.growatt_ac_discharge_energy_total_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt Battery Discharge Energy Today
+    - name: "Growatt Battery Discharge Energy Today"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_battery_discharge_energy_today_high') | int(0) %}
+        {% set low = states('sensor.growatt_battery_discharge_energy_today_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt Battery Discharge Energy Total
+    - name: "Growatt Battery Discharge Energy Total"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      device_class: energy
+      state: >
+        {% set high = states('sensor.growatt_battery_discharge_energy_total_high') | int(0) %}
+        {% set low = states('sensor.growatt_battery_discharge_energy_total_low') | int(0) %}
+        {{ ((high * 65536) + low) * 0.1 }}
+
+    # Growatt System Status (Human-Readable)
+    - name: "Growatt System Status Description"
+      state: >
+        {% set status = states('sensor.growatt_system_status') | int(0) %}
+        {% if status == 0 %} Standby
+        {% elif status == 1 %} No Use
+        {% elif status == 2 %} Discharge
+        {% elif status == 3 %} Fault
+        {% elif status == 4 %} Flash
+        {% elif status == 5 %} PV Charge
+        {% elif status == 6 %} AC Charge
+        {% elif status == 7 %} Combine Charge
+        {% elif status == 8 %} Combine Charge and Bypass
+        {% elif status == 9 %} PV Charge and Bypass
+        {% elif status == 10 %} AC Charge and Bypass
+        {% elif status == 11 %} Bypass
+        {% elif status == 12 %} PV Charge and Discharge
+        {% else %} Unknown Status ({{ status }})
+        {% endif %}
+
+    # Battery1 Time to Full Charge
+    - name: "Battery1 Time to Full Charge"
+      unique_id: battery1_time_to_charge
+      state: >
+        {% set battery1_capacity = 14336 %}
+        {% set soc = states('sensor.jk_bms_bms0_state_of_charge') | float %}
+        {% set power = states('sensor.jk_bms_bms0_power') | float %}
+        {% set remaining = battery1_capacity * (1 - (soc / 100)) %}
+        {% if power > 0 %}
+          {% set hours = (remaining / power) | int %}
+          {% set minutes = (((remaining / power) - hours) * 60) | int %}
+          {% set seconds = ((((remaining / power) - hours) * 60 - minutes) * 60) | int %}
+          {{ '%02d:%02d:%02d' | format(hours, minutes, seconds) }}
+        {% else %}
+          unavailable
+        {% endif %}
+
+    # Battery1 Time to Full Drain
+    - name: "Battery1 Time to Full Drain"
+      unique_id: battery1_time_to_drain
+      state: >
+        {% set battery1_capacity = 14336 %}
+        {% set soc = states('sensor.jk_bms_bms0_state_of_charge') | float %}
+        {% set power = states('sensor.jk_bms_bms0_power') | float %}
+        {% set remaining = battery1_capacity * (soc / 100) %}
+        {% if power < 0 %}
+          {% set hours = (remaining / -power) | int %}
+          {% set minutes = (((remaining / -power) - hours) * 60) | int %}
+          {% set seconds = ((((remaining / -power) - hours) * 60 - minutes) * 60) | int %}
+          {{ '%02d:%02d:%02d' | format(hours, minutes, seconds) }}
+        {% else %}
+          unavailable
+        {% endif %}
+
+    # Battery2 Time to Full Charge
+    - name: "Battery2 Time to Full Charge"
+      unique_id: battery2_time_to_charge
+      state: >
+        {% set battery2_capacity = 14336 %}
+        {% set soc = states('sensor.jk_bms_bms1_state_of_charge') | float %}
+        {% set power = states('sensor.jk_bms_bms1_power') | float %}
+        {% set remaining = battery2_capacity * (1 - (soc / 100)) %}
+        {% if power > 0 %}
+          {% set hours = (remaining / power) | int %}
+          {% set minutes = (((remaining / power) - hours) * 60) | int %}
+          {% set seconds = ((((remaining / power) - hours) * 60 - minutes) * 60) | int %}
+          {{ '%02d:%02d:%02d' | format(hours, minutes, seconds) }}
+        {% else %}
+          unavailable
+        {% endif %}
+
+    # Battery2 Time to Full Drain
+    - name: "Battery2 Time to Full Drain"
+      unique_id: battery2_time_to_drain
+      state: >
+        {% set battery2_capacity = 14336 %}
+        {% set soc = states('sensor.jk_bms_bms1_state_of_charge') | float %}
+        {% set power = states('sensor.jk_bms_bms1_power') | float %}
+        {% set remaining = battery2_capacity * (soc / 100) %}
+        {% if power < 0 %}
+          {% set hours = (remaining / -power) | int %}
+          {% set minutes = (((remaining / -power) - hours) * 60) | int %}
+          {% set seconds = ((((remaining / -power) - hours) * 60 - minutes) * 60) | int %}
+          {{ '%02d:%02d:%02d' | format(hours, minutes, seconds) }}
+        {% else %}
+          unavailable
+        {% endif %}

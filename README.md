@@ -8,13 +8,13 @@
 
 Welcome to the documentation for my personal homelab. This repository serves as a configuration backup and an architectural reference.
 
-The core infrastructure is built on **Proxmox VE**. To maintain a clean and reproducible setup, I utilize **LXC containers** for most services to keep overhead low.
+The core infrastructure is built on [**Proxmox VE**](https://www.proxmox.com/en/products/proxmox-virtual-environment/overview). To maintain a clean and reproducible setup, I utilize **LXC containers** for most services to keep overhead low.
 
 **Core Architecture:**
 
 1.  **Hypervisor:** Proxmox VE.
 2.  **Provisioning:** LXCs are created using the [Proxmox VE Helper-Scripts](https://community-scripts.github.io/ProxmoxVE/).
-3.  **Application Layer:** A specific "Docker Host" LXC runs Portainer/Docker, which manages various application stacks (Media, Smarthome, etc.).
+3.  **Application Layer:** A specific "Docker Host" LXC runs [Portainer](https://github.com/portainer/portainer), which manages various application stacks.
 
 ---
 
@@ -33,7 +33,7 @@ The core infrastructure is built on **Proxmox VE**. To maintain a clean and repr
 - **Router:** Starlink ISP + GL-iNET Flint 2 router
 - **DNS:** handled by AdGuard Home on router
 - **Reverse Proxy:** Nginx Proxy Manager (local access) / Clouflare Tunnel (remote access)
-- **VPN:** Wireguard / Tailscale
+- **VPN:** Surfshark / Tailscale (remote access too)
 
 ### Topology Diagram
 
@@ -41,17 +41,128 @@ The core infrastructure is built on **Proxmox VE**. To maintain a clean and repr
 graph TD
     Internet["Internet: Starlink"] --> Router["Router: Flint 2<br/>(AdGuard Home Native)"]
 
-    subgraph Proxmox_Node [Proxmox VE Host]
+    subgraph Proxmox_Node ["Proxmox VE Host"]
         direction TB
-        LXC_Docker["LXC: Docker Host"]
-        VM_HA["VM: Home Assistant OS"]
 
-        subgraph Docker_Stacks [Docker Containers]
-            Stack_Media["Stack: Media"]
+        %% Core Infrastructure
+        subgraph Core_Infra ["Core Infrastructure"]
+            direction LR
+            LXC_Docker["LXC 101: Main Docker Host"]
+            VM_HA["VM 100: Home Assistant"]
+            LXC_MQTT["LXC 104: MQTT"]
+            LXC_Z2M["LXC 103: Zigbee2MQTT"]
         end
 
+        %% Secondary Docker Host (Ubuntu VM)
+        subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
+            direction TB
+            Container_QuickDB[("QuickDB Node")]
+            Container_Consensus[("Hyperbridge Consensus Relayer")]
+            Container_Messaging[(" Hyperbridge Messaging Relayer")]
+        end
+
+        %% Standalone Services
+        subgraph Standalone ["Standalone Services"]
+            LXC_Vault["LXC 102: Vaultwarden"]
+            LXC_Jelly["LXC 107: Jellyfin"]
+            VM_OMV["VM 106: OMV"]
+        end
+
+        %% Main Docker Stacks
+        subgraph Docker_Stacks ["Docker Stacks (on LXC 101)"]
+            Stack_NPM["Nginx Proxy Mgr"]
+            Stack_Media["Media Stack"]
+            Stack_Solar["Solar Agent"]
+            Stack_Sure["Sure App"]
+            Stack_Speed["Speedtest"]
+        end
+
+        %% Connections
         LXC_Docker --> Docker_Stacks
+        LXC_Z2M --> LXC_MQTT
+        LXC_MQTT --> VM_HA
     end
 
     Router --> Proxmox_Node
 ```
+
+## 🛠️ Services & Inventory
+
+### 1. Proxmox LXC/VM Inventory
+
+All LXCs below were provisioned using the [Proxmox VE Helper-Scripts](https://community-scripts.github.io/ProxmoxVE/).
+
+| ID      | Name                                                                 | Type | Helper Script Used                                                                                               | Notes                                                                                                                                                             |
+| :------ | :------------------------------------------------------------------- | :--- | :--------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **100** | [`homeassistant`](https://github.com/home-assistant)                 | VM   | [Home Assistant OS](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/vm/haos-vm.sh)            | Open source home automation that puts local control and privacy first.                                                                                            |
+| **101** | [`docker`](https://github.com/docker)                                | LXC  | [Docker](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/vm/haos-vm.sh)                       | Docker is a containerization platform that provides easy way to containerize your applications.                                                                   |
+| **102** | [`vaultwarden`](https://github.com/dani-garcia/vaultwarden)          | LXC  | [Vaultwarden](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/vaultwarden-install.sh) | Vaultwarden is a powerful and flexible alternative password manager to Bitwarden that is particularly suitable for users who want to manage their data themselves |
+| **103** | [`zigbee2mqtt`](https://github.com/Koenkk/zigbee2mqtt)               | LXC  | [Zigbee2MQTT](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/zigbee2mqtt-install.sh) | Zigbee2MQTT bridges events and allows you to control your Zigbee devices via MQTT.                                                                                |
+| **104** | [`mqtt`](https://github.com/mqtt)                                    | LXC  | [MQTT](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/mqtt-install.sh)               | MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT)Protocol                                                                             |
+| **105** | [`ubuntu server`](https://github.com/ubuntu)                         | VM   | [Ubuntu Server OS ISO](https://ubuntu.com/download/server)                                                       | Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things.                               |
+| **106** | [`openmediavault`](https://github.com/openmediavault/openmediavault) | VM   | [openmediavault ISO](https://www.openmediavault.org/download.html)                                               | openmediavault is the next generation network attached storage (NAS) solution based on Debian Linux.                                                              |
+| **107** | [`jellyfin`](https://github.com/jellyfin/jellyfin)                   | LXC  | [Jellyfin](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/jellyfin-install.sh`)      | Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media.                                                           |
+
+### 2. Docker Stacks
+
+These services run inside the **Docker Host (LXC 101)**. Configurations for these can be found in the `/docker` directory of this repo.
+
+| Stack Name              | Services Included                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Config Location                                               |
+| :---------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| **Media**               | [Bazarr](https://github.com/morpheus65535/bazarr), [Cleanuparr](https://github.com/Cleanuparr/Cleanuparr), [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr), [Gluetun](https://github.com/qdm12/gluetun), [Huntarr](https://github.com/plexguide/Huntarr.io), [Jellyseerr](https://github.com/seerr-team/seerr), [Lidarr](https://github.com/Lidarr/Lidarr), [Prowlarr](https://github.com/Prowlarr/Prowlarr), [Qbittorrent](https://github.com/qbittorrent/qBittorrent), [Radarr](https://github.com/Radarr/Radarr), [Readarr](https://github.com/Readarr/Readarr), [Sonarr](https://github.com/Sonarr/Sonarr) | [`/docker/media-stack`](./docker/media-stack)                 |
+| **Nginx Proxy Manager** | [Nginx](https://github.com/nginx/nginx) , [Maria DB](https://github.com/jc21/docker-mariadb-aria)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | [`/docker/nginx-proxy-manager`](./docker/nginx-proxy-manager) |
+| **Solar Agent**         | [Cloudflared](https://github.com/cloudflare/cloudflared) , [n8n](https://github.com/n8n-io/n8n), [Ollama](https://github.com/ollama/ollama), [Qdrant](https://github.com/qdrant/qdrant), [Postgres](https://github.com/postgres/postgres)                                                                                                                                                                                                                                                                                                                                                                                   | [`/docker/solar-agent`](./docker/solar-agent)                 |
+| **Speedtest Tracker**   | [Speedtest Tracker ](https://github.com/alexjustesen/speedtest-tracker)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | [`/docker/speedtest`](./docker/speedtest)                     |
+| **Sure App**            | [Sure app](https://github.com/we-promise/sure), [Redis](https://github.com/redis/redis), [Postgres](https://github.com/postgres/postgres), [Postgres local backup ](https://github.com/prodrigestivill/docker-postgres-backup-local)                                                                                                                                                                                                                                                                                                                                                                                        | [`/docker/sure-app`](./docker/sure-app)                       |
+
+---
+
+## 📂 Repository Structure
+
+````text
+
+## 📂 Repository Structure
+
+```text
+
+├── docker/                    # Docker Compose files (LXC 101 Stacks)
+│   ├── media-stack/           # Arrs, Jellyseerr, Qbittorrent, Gluetun
+│   │   └── docker-compose.yaml
+│   ├── nginx-proxy-manager/   # NPM and MariaDB
+│   │   └── docker-compose.yaml
+│   ├── solar-agent/           # Cloudflared, n8n, Ollama, Qdrant
+│   │   └── docker-compose.yaml
+│   ├── speedtest/             # Speedtest Tracker
+│   │   └── docker-compose.yaml
+│   └── sure-app/              # Sure App, Redis, Postgres
+│       └── docker-compose.yaml
+├── proxmox/                   # Host & Non-Docker Configs
+    ├── home-assistant/        # HA configurations (YAMLs, backups)
+    │   ├── automations.yaml
+    │   ├── configuration.yaml
+    │   ├── dashboards.yaml
+    │   ├── modbus.yaml
+    │   └── template.yaml
+    └── ubuntu-vm-105/
+        └── hyperbridge-relayer/
+            ├── consensus-config.toml  # Config for Consensus Relayer
+            └── messaging-config.toml  # Config for Messaging Relayer
+````
+
+## ⚙️ Misc & Maintenance
+
+### Backups
+
+- **LXC/VM (System):** Backed up **Weekly** to the NAS HDD.
+  - A replication copy is sent to a work laptop to ensure off-site redundancy.
+- **Docker (Data):** Backed up **Daily** to two separate local storages attached to the Proxmox host.
+
+### Updates
+
+- **Proxmox Host:** Manual monthly updates.
+- **LXC Containers:** `apt update && apt upgrade` monthly.
+- **Docker Containers:** Managed via Portainer
+
+## 📜 License
+
+This repository is for documentation purposes.

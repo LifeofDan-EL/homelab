@@ -1,0 +1,288 @@
+- id: 69d5d531a71249eb92bdcd79a7fcf976
+  alias: PVOutput Uploader (rest_command)
+  description: Uploads values to PVOutput
+  triggers:
+    - minutes: /5
+      seconds: "0"
+      trigger: time_pattern
+  actions:
+    - data: {}
+      action: rest_command.pvoutput_generation
+  mode: single
+- id: "1714945810183"
+  alias: Pi temperature
+  description: ""
+  triggers:
+    - entity_id:
+        - sensor.system_monitor_processor_temperature
+      above: 45
+      for:
+        hours: 0
+        minutes: 2
+        seconds: 0
+      trigger: numeric_state
+  conditions: []
+  actions:
+    - metadata: {}
+      data:
+        message:
+          Your Raspberry Pi is currently at {{ states('sensor.system_monitor_processor_temperature'
+          )}}°C
+      action: notify.daniel
+  mode: single
+- id: "1715132032451"
+  alias: IP change
+  description: ""
+  triggers:
+    - entity_id:
+        - sensor.system_monitor_ipv4_address_wlan0
+      trigger: state
+  conditions: []
+  actions:
+    - metadata: {}
+      data:
+        message: Your Home Assistant IP is now {{states('sensor.system_monitor_ipv4_address_wlan0')}}
+      action: notify.daniel
+  mode: single
+- id: "1715461692509"
+  alias: Turn on outside security lights.
+  description: ""
+  triggers:
+    - at: "19:00:00"
+      trigger: time
+  conditions:
+    - condition: time
+      after: "18:00:00"
+      before: 06:00:00
+  actions:
+    - metadata: {}
+      data:
+        message: Turned on the outside security lights.
+      action: notify.daniel
+    - metadata: {}
+      data: {}
+      target:
+        label_id: outside
+      action: switch.turn_on
+  mode: single
+- id: "1715462077370"
+  alias: Turn off outside security lights.
+  description: ""
+  triggers:
+    - at: 06:30:00
+      trigger: time
+  conditions:
+    - condition: time
+      after: 06:00:00
+      before: "19:30:00"
+  actions:
+    - metadata: {}
+      data:
+        message: Turned off the outside security lights.
+      action: notify.daniel
+    - target:
+        label_id: outside
+      data: {}
+      action: switch.turn_off
+  mode: single
+- id: "1728858462287"
+  alias: Turn off grid at 98% SOC
+  description: ""
+  triggers:
+    - trigger: numeric_state
+      entity_id:
+        - sensor.total_battery_soc
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
+      above: 98
+  conditions:
+    - condition: state
+      entity_id: switch.grid_breaker_switch
+      state: "on"
+  actions:
+    - type: turn_off
+      device_id: 7020b896d1bf0fbd7dca850d3e3be700
+      entity_id: 8c5baff1432601eb59fc55c6ef9f79f9
+      domain: switch
+    - action: notify.daniel
+      metadata: {}
+      data:
+        message: Turned off grid breaker because your battery is at 70%
+  mode: single
+- id: "1731191182628"
+  alias: Reload Tuya entity
+  description: This automation reloads Tuya integration to fix for lag
+  triggers:
+    - minutes: "15"
+      seconds: "0"
+      trigger: time_pattern
+  conditions: []
+  actions:
+    - action: homeassistant.reload_config_entry
+      data:
+        entry_id: f97d4bf1bd3a5e306980b9379f9d1f92
+  mode: single
+- id: "1731523210378"
+  alias: Fence Socket monitoring
+  description:
+    "This automation turns off the fence's socket, when it is more than
+    150w. "
+  triggers:
+    - trigger: numeric_state
+      entity_id:
+        - sensor.fence_socket_power
+      above: 200
+  conditions: []
+  actions:
+    - action: notify.daniel
+      metadata: {}
+      data:
+        message: Your neighbours have plugged something they shouldn't have.
+    - action: switch.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.fence_socket
+  mode: single
+- id: "1734903656828"
+  alias: Washing machine monitoring
+  description:
+    "This automation allows me to know when a cycle in the washing machine
+    has been completed. "
+  triggers:
+    - trigger: numeric_state
+      entity_id:
+        - sensor.smart_plug_3_power
+      below: 1
+      for:
+        hours: 0
+        minutes: 2
+        seconds: 0
+  conditions: []
+  actions:
+    - action: notify.daniel
+      metadata: {}
+      data:
+        message: Washing machine cycle completed
+  mode: single
+- id: "1735854936248"
+  alias: "Grid availability "
+  description: "This automations let's you know when there's grid light. "
+  triggers:
+    - trigger: numeric_state
+      entity_id:
+        - sensor.growatt_inverter_ac_input_voltage
+      above: 100
+  conditions: []
+  actions:
+    - action: notify.daniel
+      metadata: {}
+      data:
+        message: "You have grid light now. "
+  mode: single
+- id: "1736766123681"
+  alias: Parlour TV Test
+  description: ""
+  triggers:
+    - trigger: state
+      entity_id:
+        - switch.parlour_main_switch_switch_1
+  conditions: []
+  actions:
+    - action: notify.daniel
+      metadata: {}
+      data:
+        message: "Test "
+    - action: notify.lg_webos_tv_un7100pva
+      metadata: {}
+      data:
+        message: Ugo.exe on Deez nuts
+  mode: single
+- id: update_daily_peak_power_and_time
+  alias: Update Daily Peak Power and Time
+  description: Updates solar and load peak values and their timestamps.
+  triggers:
+    - trigger: state
+      entity_id:
+        - sensor.total_pv
+        - sensor.growatt_load_power
+  condition: []
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template:
+                "{{ states('sensor.total_pv') | float > states('input_number.solar_daily_peak_power')
+                | float }}"
+          sequence:
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.solar_daily_peak_power
+              data:
+                value: "{{ states('sensor.total_pv') | float }}"
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.pv_peak_time
+              data:
+                value: "{{ now().strftime('%I:%M %p') }}"
+        - conditions:
+            - condition: template
+              value_template:
+                "{{ states('sensor.growatt_load_power') | float > states('input_number.load_daily_peak_power')
+                | float }}"
+          sequence:
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.load_daily_peak_power
+              data:
+                value: "{{ states('sensor.growatt_load_power') | float }}"
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.load_peak_time
+              data:
+                value: "{{ now().strftime('%I:%M %p') }}"
+  mode: queued
+- id: reset_peak_power_and_times_at_midnight
+  alias: Reset Peak Power and Times at Midnight
+  description:
+    Resets the solar and load peak power values and their time records
+    at midnight.
+  triggers:
+    - trigger: time
+      at: 00:00:00
+  condition: []
+  action:
+    - action: input_number.set_value
+      target:
+        entity_id:
+          - input_number.solar_daily_peak_power
+          - input_number.load_daily_peak_power
+      data:
+        value: 0
+    - action: input_text.set_value
+      target:
+        entity_id:
+          - input_text.pv_peak_time
+          - input_text.load_peak_time
+      data:
+        value: --:-- --
+  mode: single
+- id: "1750255302717"
+  alias: PV Performance Summary
+  description: "This gives a summary of my daily solar performance. "
+  triggers:
+    - trigger: time
+      at: "19:30:00"
+  conditions: []
+  actions:
+    - action: notify.daniel
+      metadata: {}
+      data:
+        message:
+          "\U0001F4CA Today's PV Performance Summary    ☀️ Max PV: {{ states('input_number.solar_daily_peak_power')
+          | float(0) | int }} W  \U0001F552 Time Recorded: {{ states('input_text.pv_peak_time'
+          )}}  ⚡ Total Generation: {{ states('sensor.growatt_solar_energy_today' )}}
+          kWh"
+  mode: single

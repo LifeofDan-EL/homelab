@@ -1,0 +1,407 @@
+#Modbus
+- name: growatt
+  type: rtuovertcp
+  host: 192.168.8.15 # Waveshare RS485 adapter IP
+  port: 502 # Change if necessary
+  delay: 5
+  timeout: 5
+  message_wait_milliseconds: 500
+
+  sensors:
+    # System Status
+    - name: "Growatt System Status"
+      slave: 1
+      address: 0
+      input_type: input
+      data_type: uint16
+
+    # Solar PV Sensors
+    - name: "Growatt PV1 Voltage"
+      slave: 1
+      address: 1
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "V"
+      state_class: measurement
+      device_class: voltage
+
+    - name: "Growatt PV2 Voltage"
+      slave: 1
+      address: 2
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "V"
+      state_class: measurement
+      device_class: voltage
+
+    - name: "Growatt PV1 Current"
+      slave: 1
+      address: 7
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "A"
+      state_class: measurement
+      device_class: current
+
+    - name: "Growatt PV2 Current"
+      slave: 1
+      address: 8
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "A"
+      state_class: measurement
+      device_class: current
+
+    # PV Power (Read High & Low Registers)
+    - name: "Growatt PV1 Charge Power High"
+      slave: 1
+      address: 3
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt PV1 Charge Power Low"
+      slave: 1
+      address: 4
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt PV2 Charge Power High"
+      slave: 1
+      address: 5
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt PV2 Charge Power Low"
+      slave: 1
+      address: 6
+      input_type: input
+      data_type: uint16
+
+    # Inverter & System Temperature Sensors
+    - name: "Growatt Inverter Temperature"
+      slave: 1
+      address: 25
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+
+    - name: "Growatt DC-DC Temperature"
+      slave: 1
+      address: 26
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+
+    # Battery Sensors
+    - name: "Growatt Battery Voltage"
+      slave: 1
+      address: 17
+      input_type: input
+      data_type: uint16
+      scale: 0.01
+      unit_of_measurement: "V"
+      state_class: measurement
+      device_class: voltage
+
+    - name: "Growatt Battery SOC"
+      slave: 1
+      address: 18
+      input_type: input
+      data_type: uint16
+      unit_of_measurement: "%"
+      state_class: measurement
+      device_class: battery
+
+    - name: "Growatt Battery Power High"
+      slave: 1
+      address: 77
+      input_type: input
+      data_type: int16
+
+    - name: "Growatt Battery Power Low"
+      slave: 1
+      address: 78
+      input_type: input
+      data_type: int16
+
+    # AC Output Sensors
+    - name: "Growatt AC Output Voltage"
+      slave: 1
+      address: 22
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "V"
+      state_class: measurement
+      device_class: voltage
+
+    - name: "Growatt AC Output Frequency"
+      slave: 1
+      address: 23
+      input_type: input
+      data_type: uint16
+      scale: 0.01
+      unit_of_measurement: "Hz"
+      state_class: measurement
+      device_class: frequency
+
+    # AC Charge Power (High & Low)
+    - name: "Growatt AC Charge Power High"
+      slave: 1
+      address: 13
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Charge Power Low"
+      slave: 1
+      address: 14
+      input_type: input
+      data_type: uint16
+
+    # Grid Sensors
+    - name: "Growatt Grid Voltage"
+      slave: 1
+      address: 20
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "V"
+      state_class: measurement
+      device_class: voltage
+
+    - name: "Growatt Grid Frequency"
+      slave: 1
+      address: 21
+      input_type: input
+      data_type: uint16
+      scale: 0.01
+      unit_of_measurement: "Hz"
+      state_class: measurement
+      device_class: frequency
+
+    # Load Power
+    - name: "Growatt Load Power High"
+      slave: 1
+      address: 9
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Load Power Low"
+      slave: 1
+      address: 10
+      input_type: input
+      data_type: uint16
+
+    # Load Percentage
+    - name: "Growatt Load Percentage"
+      slave: 1
+      address: 27
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "%"
+      state_class: measurement
+      device_class: power_factor
+
+    # Fan Speeds
+    - name: "Growatt MPPT Fan Speed"
+      slave: 1
+      address: 81
+      input_type: input
+      data_type: uint16
+      unit_of_measurement: "%"
+      state_class: measurement
+      device_class: speed
+
+    - name: "Growatt Inverter Fan Speed"
+      slave: 1
+      address: 82
+      input_type: input
+      data_type: uint16
+      unit_of_measurement: "%"
+      state_class: measurement
+      device_class: speed
+
+    # Fault Codes
+    - name: "Growatt Fault Bit"
+      slave: 1
+      address: 40
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Warning Bit"
+      slave: 1
+      address: 41
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Fault Value"
+      slave: 1
+      address: 42
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Warning Value"
+      slave: 1
+      address: 43
+      input_type: input
+      data_type: uint16
+
+    # Work Time Total (High & Low)
+    - name: "Growatt Work Time Total High"
+      slave: 1
+      address: 30
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Work Time Total Low"
+      slave: 1
+      address: 31
+      input_type: input
+      data_type: uint16
+
+      # AC Input Power (High & Low)
+    - name: "Growatt AC Input Power High"
+      slave: 1
+      address: 36
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Input Power Low"
+      slave: 1
+      address: 37
+      input_type: input
+      data_type: uint16
+
+      # PV Energy Today & Total
+    - name: "Growatt Solar Energy Today High"
+      slave: 1
+      address: 48
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Solar Energy Today Low"
+      slave: 1
+      address: 49
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Solar Energy Total High"
+      slave: 1
+      address: 50
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Solar Energy Total Low"
+      slave: 1
+      address: 51
+      input_type: input
+      data_type: uint16
+
+    # AC Charge Energy
+    - name: "Growatt AC Charge Energy Today High"
+      slave: 1
+      address: 56
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Charge Energy Today Low"
+      slave: 1
+      address: 57
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Charge Energy Total High"
+      slave: 1
+      address: 58
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Charge Energy Total Low"
+      slave: 1
+      address: 59
+      input_type: input
+      data_type: uint16
+
+    # Battery Discharge Energy
+    - name: "Growatt Battery Discharge Energy Today High"
+      slave: 1
+      address: 60
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Battery Discharge Energy Today Low"
+      slave: 1
+      address: 61
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Battery Discharge Energy Total High"
+      slave: 1
+      address: 62
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt Battery Discharge Energy Total Low"
+      slave: 1
+      address: 63
+      input_type: input
+      data_type: uint16
+
+    # AC Discharge Energy
+    - name: "Growatt AC Discharge Energy Today High"
+      slave: 1
+      address: 64
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Discharge Energy Today Low"
+      slave: 1
+      address: 65
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Discharge Energy Total High"
+      slave: 1
+      address: 66
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Discharge Energy Total Low"
+      slave: 1
+      address: 67
+      input_type: input
+      data_type: uint16
+
+    # AC Charge Current & AC Discharge Power
+    - name: "Growatt AC Charge Battery Current"
+      slave: 1
+      address: 68
+      input_type: input
+      data_type: uint16
+      scale: 0.1
+      unit_of_measurement: "A"
+      state_class: measurement
+      device_class: current
+
+    - name: "Growatt AC Discharge Power High"
+      slave: 1
+      address: 69
+      input_type: input
+      data_type: uint16
+
+    - name: "Growatt AC Discharge Power Low"
+      slave: 1
+      address: 70
+      input_type: input
+      data_type: uint16

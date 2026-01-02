@@ -1,0 +1,65 @@
+[hyperbridge]
+state_machine = "POLKADOT-3367"  # Hyperbridge on Polkadot mainnet
+hashing = "Keccak"
+signer = "YOUR_PRIVATE_KEY"  # Your wallet private key 
+consensus_state_id = "DOT0"
+rpc_ws = "wss://nexus.ibp.network"
+
+## Ethereum Mainnet
+[ethereum]
+type = "evm"
+poll_interval = 15
+state_machine = "EVM-1"
+rpc_urls = [
+"https://eth-mainnet.g.alchemy.com/v2/REDACTED", "https://ethereum-rpc.publicnode.com"]
+consensus_state_id = "ETH0"
+etherscan_api_key = "YOUR_ETHERSCAN_KEY" 
+ismp_host = "0x792A6236AF69787C40cF76b69B4c8c7B28c4cA20"
+signer = "YOUR_PRIVATE_KEY"  # Your wallet private key 
+tracing_batch_size = 5
+query_batch_size = 10000
+gas_price_buffer = 1
+
+## Binance Smart Chain
+[bsc]
+type = "evm"
+poll_interval = 15
+state_machine = "EVM-56"
+rpc_urls = [
+"https://bsc.rpc.blockops.network?api_key=REDACTED", "https://bsc-rpc.publicnode.com"
+]
+consensus_state_id = "BSC0"
+etherscan_api_key = "YOUR_ETHERSCAN_KEY" 
+ismp_host = "0x24B5d421Ec373FcA57325dd2F0C074009Af021F7"
+signer = "YOUR_PRIVATE_KEY"  # Your wallet private key 
+tracing_batch_size = 5
+query_batch_size = 10000
+
+## Gnosis Chain
+[gnosis]
+type = "evm"
+poll_interval = 15
+state_machine = "EVM-100"
+rpc_urls = [
+"https://gnosis.rpc.blockops.network?api_key=REDACTED", "https://gnosis-rpc.publicnode.com"
+]
+consensus_state_id = "GNO0"
+etherscan_api_key = "YOUR_ETHERSCAN_KEY" 
+ismp_host = "0x50c236247447B9d4Ee0561054ee596fbDa7791b1"
+signer = "YOUR_PRIVATE_KEY"  # Your wallet private key 
+tracing_batch_size = 5
+query_batch_size = 10000
+
+## Relayer Business Logic
+[relayer]
+minimum_profit_percentage = 1  # Require 1% profit minimum
+unprofitable_retry_frequency = 120  # Retry every 2 minutes
+withdrawal_frequency = 86400
+minimum_withdrawal_amount = 100
+
+# the delivery endpoint should have all the evm chain configured above
+delivery_endpoints = [
+   "EVM-1",    # Ethereum
+   "EVM-100",  # Gnosis
+   "EVM-56"    # BSC
+]

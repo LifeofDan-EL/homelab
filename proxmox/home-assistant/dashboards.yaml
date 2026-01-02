@@ -1,0 +1,826 @@
+title: Home
+views:
+  - path: default_view
+    title: Home
+    cards:
+      - type: custom:power-flow-card-plus
+        entities:
+          battery:
+            entity:
+              consumption: sensor.total_battery_discharge
+              production: sensor.total_battery_charging
+            state_of_charge: sensor.total_battery_soc
+            invert_state: true
+          grid:
+            secondary_info:
+              unit_of_measurement: kWh
+              unit_white_space: false
+              decimals: 1
+              entity: sensor.growatt_ac_charge_energy_today
+            entity: sensor.growatt_ac_input_power
+          solar:
+            entity: sensor.total_pv
+            display_zero_state: true
+            secondary_info:
+              unit_of_measurement: kWh
+              decimals: 1
+              entity: sensor.growatt_solar_energy_today
+            use_metadata: false
+            invert_state: false
+            color_icon: false
+            color_value: false
+          home:
+            entity: sensor.growatt_load_power
+            use_metadata: false
+            override_state: true
+            secondary_info:
+              decimals: 1
+              unit_of_measurement: kWh
+              unit_white_space: false
+              entity: sensor.growatt_load_consumption_daily
+        clickable_entities: true
+        display_zero_lines:
+          mode: transparency
+          transparency: 50
+          grey_color:
+            - 189
+            - 189
+            - 189
+        use_new_flow_rate_model: true
+        w_decimals: 0
+        kw_decimals: 1
+        min_flow_rate: 0.75
+        max_flow_rate: 6
+        max_expected_power: 2000
+        min_expected_power: 0.01
+        watt_threshold: 1000
+        transparency_zero_lines: 0
+        title: Home Energy
+        disable_dots: false
+      - type: weather-forecast
+        entity: weather.forecast_home
+        show_forecast: false
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 7d
+        span:
+          end: day
+        show:
+          last_updated: true
+        header:
+          show: true
+          title: Grid Hours of Supply
+          show_states: true
+          colorize_states: true
+        yaxis:
+          - min: 0
+            max: ~24
+            decimals: 0
+        series:
+          - entity: sensor.grid_breaker_uptime
+            show:
+              header_color_threshold: true
+              extremas: true
+              as_duration: hour
+            type: column
+            name: Duration
+            group_by:
+              func: last
+              duration: 1d
+            color_threshold:
+              - value: 1
+                color: darkred
+              - value: 8
+                color: green
+  - title: Living areas
+    path: living-areas
+    icon: ""
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - entity: media_player.lg_webos_tv_un7100pva
+          - entity: switch.parlour_main_socket
+            name: Main socket
+          - entity: sensor.parlour_main_socket_power
+          - entity: switch.parlour_main_switch_left
+          - entity: switch.parlour_second_switch_left
+          - entity: switch.parlour_second_switch_right
+          - entity: switch.parlour_toilet_switch
+          - entity: switch.parlour_main_switch_right
+          - entity: switch.fence_socket
+          - entity: sensor.fence_socket_power
+        title: Living Room
+        state_color: true
+      - type: entities
+        entities:
+          - entity: switch.dining_switch_left
+          - entity: switch.dining_switch_right
+        title: Dining area
+        state_color: true
+      - type: entities
+        entities:
+          - entity: switch.passage_main_switch_right
+          - entity: switch.passage_main_switch_center
+          - entity: switch.kitchen_passage_switch_left
+          - entity: switch.passage_main_switch_left
+          - entity: switch.kitchen_passage_second_switch_left
+          - entity: switch.kitchen_passage_second_switch_right
+          - entity: switch.big_freezer
+          - entity: sensor.big_freezer_power
+          - entity: switch.small_freezer
+          - entity: sensor.small_freezer_power
+        title: Passage
+        state_color: true
+      - type: entities
+        entities:
+          - entity: remote.google_tv_streamer
+          - entity: media_player.google_tv_streamer
+          - entity: sensor.daniel_s_temperature_humidity_sensor_temperature
+          - entity: sensor.daniel_s_temperature_humidity_sensor_humidity
+          - entity: switch.daniel_socket_1_socket_1
+          - entity: sensor.daniel_socket_1_power
+          - entity: switch.daniel_s_smart_switch_switch_1
+          - entity: switch.daniel_s_smart_switch_switch_3
+            name: POP inner light
+          - entity: switch.daniel_s_pop_spotlight
+          - entity: switch.daniel_s_smart_switch_switch_2
+          - entity: switch.standing_fan
+            icon: mdi:fan
+            name: "Standing fan "
+          - entity: sensor.standing_fan_power
+        title: Daniel's bedroom
+        state_color: true
+      - type: entities
+        entities:
+          - entity: switch.parent_s_bedroom_switch_center
+          - entity: switch.parent_s_bedroom_switch_right
+          - entity: switch.parent_s_bedroom_switch_left
+          - entity: light.parent_fan_switch
+          - entity: switch.boiler_switch
+            icon: mdi:water-boiler
+          - entity: sensor.boiler_switch_power
+        title: Parent's bedroom
+        state_color: true
+      - type: entities
+        entities:
+          - entity: light.sarah_s_bedroom_fan
+          - entity: switch.sarah_s_bedroom_switch_right
+          - entity: switch.sarah_s_bedroom_switch_left
+        title: Sarah's bedroom
+        state_color: true
+      - type: entities
+        entities:
+          - entity: light.children_s_bedroom_fan
+          - entity: switch.children_s_bedroom_light
+        title: Children's bedroom
+        state_color: true
+      - type: entities
+        entities:
+          - entity: switch.kitchen_passage_switch_right
+          - entity: switch.induction_cooker
+          - entity: sensor.induction_cooker_power
+          - entity: switch.microwave_oven_socket
+          - entity: sensor.microwave_oven_socket_power
+          - entity: switch.airfryer_oven
+          - entity: sensor.airfryer_oven_power
+        title: Kitchen
+        state_color: true
+      - type: grid
+        square: false
+        columns: 1
+        cards:
+          - type: entities
+            entities:
+              - remote.google_tv_streamer
+            title: Google TV Streamer
+          - type: media-control
+            entity: media_player.google_tv_streamer
+  - icon: mdi:solar-panel-large
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: " PV1"
+          - type: gauge
+            entity: sensor.growatt_pv1_charge_power
+            name: Power
+            min: 0
+            max: 2200
+            severity:
+              green: 1100
+              yellow: 550
+              red: 0
+            needle: false
+          - type: gauge
+            entity: sensor.growatt_pv1_voltage
+            name: Voltage
+            min: 0
+            max: 450
+            severity:
+              green: 150
+              yellow: 0
+              red: 450
+            needle: false
+          - type: gauge
+            entity: sensor.growatt_pv1_current
+            name: Current
+            min: 0
+            max: 20
+            severity:
+              green: 5
+              yellow: 0
+              red: 39
+            needle: false
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: " PV2"
+          - type: gauge
+            entity: sensor.growatt_pv2_charge_power
+            name: Power
+            min: 0
+            max: 4655
+            severity:
+              green: 2300
+              yellow: 665
+              red: 0
+            needle: false
+          - type: gauge
+            entity: sensor.growatt_pv2_voltage
+            name: Voltage
+            min: 0
+            max: 450
+            severity:
+              green: 150
+              yellow: 0
+              red: 450
+            needle: false
+          - type: gauge
+            entity: sensor.growatt_pv2_current
+            name: Current
+            min: 0
+            max: 20
+            severity:
+              green: 5
+              yellow: 0
+              red: 39
+            needle: false
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Charts
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.growatt_pv1_charge_power
+              - sensor.growatt_pv2_charge_power
+            stat_types:
+              - max
+            days_to_show: 1
+            title: Power
+            hide_legend: false
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.growatt_pv1_voltage
+              - sensor.growatt_pv2_voltage
+            days_to_show: 1
+            title: Voltage
+            hide_legend: false
+            stat_types:
+              - max
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.growatt_pv1_current
+              - sensor.growatt_pv2_current
+            stat_types:
+              - max
+            days_to_show: 1
+            title: Current
+            hide_legend: false
+      - type: grid
+        cards:
+          - type: heading
+            heading: Energy
+          - chart_type: bar
+            period: day
+            type: statistics-graph
+            entities:
+              - sensor.growatt_solar_energy_today
+            stat_types:
+              - state
+            days_to_show: 7
+            hide_legend: true
+            logarithmic_scale: true
+          - type: statistic
+            entity: sensor.growatt_solar_energy_today
+            period:
+              calendar:
+                period: day
+            stat_type: change
+            name: Today
+          - type: statistic
+            period:
+              calendar:
+                period: week
+            stat_type: change
+            name: This Week
+            icon: mdi:solar-power
+            entity: sensor.growatt_solar_energy_today
+          - type: statistic
+            period:
+              calendar:
+                period: month
+            stat_type: change
+            name: This Month
+            icon: mdi:solar-power-variant
+            entity: sensor.growatt_solar_energy_today
+          - type: statistic
+            entity: sensor.growatt_solar_energy_today
+            period:
+              calendar:
+                period: year
+            stat_type: change
+            name: This Year
+            icon: mdi:solar-power-variant-outline
+      - type: grid
+        cards:
+          - type: heading
+            heading: Environment
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.forecast_home
+            forecast_type: daily
+            name: Weather
+            secondary_info_attribute: humidity
+          - type: entities
+            entities:
+              - entity: sensor.total_forecast_next_hour
+                name: next hour
+              - entity: sensor.total_forecast_remaining_today
+                name: remaining today
+              - entity: sensor.total_forecast_this_hour
+                name: this hour
+              - entity: sensor.total_forecast_today
+                name: today
+              - entity: sensor.total_forecast_tomorrow
+                name: tomorrow
+              - entity: sensor.total_forecast_now
+                name: " now"
+            title: Total Solar production forecast
+      - type: grid
+        cards:
+          - type: heading
+            heading: Solar Production Forecast PV1
+          - type: entities
+            entities:
+              - entity: sensor.energy_next_hour_2
+                name: next hour
+              - entity: sensor.energy_production_today_remaining_2
+                name: remaining today
+              - entity: sensor.energy_current_hour_2
+                name: this hour
+              - entity: sensor.energy_production_today_2
+                name: today
+              - entity: sensor.energy_production_tomorrow_2
+                name: tomorrow
+              - entity: sensor.power_production_now_2
+                name: " now"
+              - entity: sensor.power_highest_peak_time_today_2
+                name: peak time - today
+              - entity: sensor.power_highest_peak_time_tomorrow_2
+                name: peak time - tomorrow
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Solar Production Forecast PV2
+          - type: entities
+            entities:
+              - entity: sensor.energy_next_hour
+                name: next hour
+              - entity: sensor.energy_production_today_remaining
+                name: remaining today
+              - entity: sensor.energy_current_hour
+                name: this hour
+              - entity: sensor.energy_production_today
+                name: today
+              - entity: sensor.energy_production_tomorrow
+                name: tomorrow
+              - entity: sensor.power_production_now
+                name: " now"
+              - entity: sensor.power_highest_peak_time_today
+                name: peak time - today
+              - entity: sensor.power_highest_peak_time_tomorrow
+                name: peak time - tomorrow
+        column_span: 1
+  - icon: mdi:car-battery
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: gauge
+                entity: sensor.jk_bms_bms0_state_of_charge
+                name: Battery 1 SOC
+                min: 0
+                max: 100
+                severity:
+                  green: 70
+                  yellow: 30
+                  red: 0
+                theme: Fluent Blue
+              - type: gauge
+                entity: sensor.jk_bms_bms1_state_of_charge
+                name: Battery 2 SOC
+                min: 0
+                max: 100
+                severity:
+                  green: 70
+                  yellow: 30
+                  red: 0
+                theme: Fluent Blue
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.jk_bms_bms0_state_of_charge
+              - sensor.jk_bms_bms1_state_of_charge
+            stat_types:
+              - mean
+            days_to_show: 1
+            hide_legend: false
+      - type: vertical-stack
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: gauge
+                entity: sensor.jk_bms_bms0_total_voltage
+                name: Battery1 Voltage
+                min: 42.2
+                max: 56
+                severity:
+                  green: 52.8
+                  yellow: 46.7
+                  red: 42.2
+                theme: Fluent Blue
+          - type: vertical-stack
+            cards:
+              - type: gauge
+                entity: sensor.jk_bms_bms1_total_voltage
+                name: Battery2 Voltage
+                min: 42.2
+                max: 56
+                severity:
+                  green: 52.8
+                  yellow: 46.7
+                  red: 42.2
+                theme: Fluent Blue
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.jk_bms_bms0_total_voltage
+              - sensor.jk_bms_bms1_total_voltage
+            stat_types:
+              - mean
+            days_to_show: 1
+            hide_legend: false
+      - type: vertical-stack
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: gauge
+                entity: sensor.jk_bms_bms0_capacity_remaining
+                name: Battery1 Capacity
+                min: 0
+                max: 280
+                severity:
+                  green: 140
+                  yellow: 56
+                  red: 0
+                theme: Fluent Blue
+              - type: gauge
+                entity: sensor.jk_bms_bms1_capacity_remaining
+                name: Battery2 Capacity
+                min: 0
+                max: 280
+                severity:
+                  green: 140
+                  yellow: 56
+                  red: 0
+                theme: Fluent Blue
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.jk_bms_bms0_capacity_remaining
+              - sensor.jk_bms_bms1_capacity_remaining
+            stat_types:
+              - mean
+            days_to_show: 1
+            hide_legend: false
+      - type: vertical-stack
+        cards:
+          - type: gauge
+            entity: sensor.jk_bms_bms0_current
+            name: Baterry1 Current
+            min: 0
+            max: 50
+            severity:
+              green: 25
+              yellow: 10
+              red: 5
+            theme: Fluent Blue
+          - type: gauge
+            entity: sensor.jk_bms_bms1_current
+            name: Baterry2 Current
+            min: 0
+            max: 50
+            severity:
+              green: 25
+              yellow: 10
+              red: 5
+            theme: Fluent Blue
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.jk_bms_bms0_current
+              - sensor.jk_bms_bms1_current
+            stat_types:
+              - mean
+            days_to_show: 1
+            hide_legend: false
+      - type: vertical-stack
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: gauge
+                entity: sensor.jk_bms_bms0_power
+                name: Power
+                min: 0
+                severity:
+                  green: 300
+                  yellow: 100
+                  red: 0
+                theme: Fluent Blue
+                max: 2200
+          - type: vertical-stack
+            cards:
+              - type: gauge
+                entity: sensor.jk_bms_bms1_power
+                name: Power
+                min: 0
+                severity:
+                  green: 300
+                  yellow: 100
+                  red: 0
+                theme: Fluent Blue
+                max: 2200
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.jk_bms_bms0_power
+              - sensor.jk_bms_bms1_power
+            stat_types:
+              - mean
+            days_to_show: 1
+            hide_legend: false
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: switch.jk_bms_bms0_charging
+                name: Charging
+              - entity: switch.jk_bms_bms0_discharging
+                name: Discharging
+                icon: mdi:battery-minus
+              - entity: switch.jk_bms_bms0_balancer
+                name: Balancer
+            title: Battery 1
+            theme: Fluent Purple
+            show_header_toggle: false
+          - type: entities
+            entities:
+              - entity: switch.jk_bms_bms1_charging
+                name: Charging
+              - entity: switch.jk_bms_bms1_discharging
+                name: Discharging
+                icon: mdi:battery-minus
+              - entity: switch.jk_bms_bms1_balancer
+                name: Balancer
+            title: Battery 2
+            theme: Fluent Purple
+            show_header_toggle: false
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.jk_bms_bms0_average_cell_voltage
+                name: Cell average
+              - entity: sensor.jk_bms_bms0_delta_cell_voltage
+                name: Cell delta
+              - entity: sensor.jk_bms_bms0_min_cell_voltage
+                name: Cell min
+              - entity: sensor.jk_bms_bms0_max_cell_voltage
+                name: Cell max
+                icon: ""
+              - entity: sensor.jk_bms_bms0_cell_voltage_1
+                name: Cell 1
+              - entity: sensor.jk_bms_bms0_cell_voltage_2
+                name: Cell 2
+              - entity: sensor.jk_bms_bms0_cell_voltage_3
+                name: Cell 3
+              - entity: sensor.jk_bms_bms0_cell_voltage_4
+                name: Cell 4
+              - entity: sensor.jk_bms_bms0_cell_voltage_5
+                name: Cell 5
+              - entity: sensor.jk_bms_bms0_cell_voltage_6
+                name: Cell 6
+              - entity: sensor.jk_bms_bms0_cell_voltage_7
+                name: Cell 7
+              - entity: sensor.jk_bms_bms0_cell_voltage_8
+                name: Cell 8
+              - entity: sensor.jk_bms_bms0_cell_voltage_9
+                name: Cell 9
+              - entity: sensor.jk_bms_bms0_cell_voltage_10
+                name: Cell 10
+              - entity: sensor.jk_bms_bms0_cell_voltage_11
+                name: Cell 11
+              - entity: sensor.jk_bms_bms0_cell_voltage_12
+                name: Cell 12
+              - entity: sensor.jk_bms_bms0_cell_voltage_13
+                name: Cell 13
+              - entity: sensor.jk_bms_bms0_cell_voltage_14
+                name: Cell 14
+              - entity: sensor.jk_bms_bms0_cell_voltage_15
+                name: Cell 15
+              - entity: sensor.jk_bms_bms0_cell_voltage_16
+                name: Cell 16
+            title: "Battery 1 "
+            theme: Fluent Purple
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.battery1_time_to_full_charge
+                icon: mdi:battery-positive
+              - entity: sensor.battery1_time_to_full_drain
+                icon: mdi:battery-negative
+            title: Battery 1
+          - type: entities
+            entities:
+              - entity: sensor.battery2_time_to_full_charge
+                icon: mdi:battery-positive
+              - entity: sensor.battery2_time_to_full_drain
+                icon: mdi:battery-negative
+            title: Battery 2
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.jk_bms_bms1_average_cell_voltage
+                name: Cell average
+              - entity: sensor.jk_bms_bms1_delta_cell_voltage
+                name: Cell delta
+              - entity: sensor.jk_bms_bms1_min_cell_voltage
+                name: Cell min
+              - entity: sensor.jk_bms_bms1_max_cell_voltage
+                name: Cell max
+                icon: ""
+              - entity: sensor.jk_bms_bms1_cell_voltage_1
+                name: Cell 1
+              - entity: sensor.jk_bms_bms1_cell_voltage_2
+                name: Cell 2
+              - entity: sensor.jk_bms_bms1_cell_voltage_3
+                name: Cell 3
+              - entity: sensor.jk_bms_bms1_cell_voltage_4
+                name: Cell 4
+              - entity: sensor.jk_bms_bms1_cell_voltage_5
+                name: Cell 5
+              - entity: sensor.jk_bms_bms1_cell_voltage_6
+                name: Cell 6
+              - entity: sensor.jk_bms_bms1_cell_voltage_7
+                name: Cell 7
+              - entity: sensor.jk_bms_bms1_cell_voltage_8
+                name: Cell 8
+              - entity: sensor.jk_bms_bms1_cell_voltage_9
+                name: Cell 9
+              - entity: sensor.jk_bms_bms1_cell_voltage_10
+                name: Cell 10
+              - entity: sensor.jk_bms_bms1_cell_voltage_11
+                name: Cell 11
+              - entity: sensor.jk_bms_bms1_cell_voltage_12
+                name: Cell 12
+              - entity: sensor.jk_bms_bms1_cell_voltage_13
+                name: Cell 13
+              - entity: sensor.jk_bms_bms1_cell_voltage_14
+                name: Cell 14
+              - entity: sensor.jk_bms_bms1_cell_voltage_15
+                name: Cell 15
+              - entity: sensor.jk_bms_bms1_cell_voltage_16
+                name: Cell 16
+            title: Battery 2
+            theme: Fluent Purple
+  - type: panel
+    cards:
+      - chart_type: line
+        period: 5minute
+        type: statistics-graph
+        entities:
+          - sensor.total_pv
+          - sensor.growatt_load_power
+          - sensor.battery_power
+          - sensor.total_battery_charging
+          - sensor.total_battery_discharge
+        stat_types:
+          - mean
+          - max
+        days_to_show: 1
+        hide_legend: false
+        logarithmic_scale: false
+    title: Graphs
+  - icon: mdi:server-minus-outline
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            entities:
+              - sensor.system_monitor_processor_temperature
+            name: CPU temp
+            line_color: red
+            line_width: 8
+            font_size: 75
+            points_per_hour: 60
+            hours_to_show: 5
+          - type: custom:mini-graph-card
+            entities:
+              - sensor.system_monitor_memory_usage
+            name: RAM used
+            icon: mdi:memory
+            line_color: white
+            line_width: 8
+            font_size: 75
+            points_per_hour: 60
+            hours_to_show: 24
+          - type: custom:mini-graph-card
+            entities:
+              - sensor.system_monitor_disk_usage
+            name: Disk used
+            icon: mdi:harddisk
+            line_color: blue
+            line_width: 8
+            font_size: 75
+            points_per_hour: 60
+            hours_to_show: 5
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            entities:
+              - sensor.system_monitor_network_throughput_in_hassio
+            name: Throughput In
+            hours_to_show: 4
+            line_color: blue
+            points_per_hour: 60
+          - type: custom:mini-graph-card
+            entities:
+              - sensor.system_monitor_network_throughput_out_hassio
+            name: Throughput Out
+            hours_to_show: 4
+            line_color: green
+            points_per_hour: 60
+      - type: vertical-stack
+        cards:
+          - type: custom:mini-graph-card
+            entities:
+              - entity: sensor.system_monitor_load_1m
+                name: 1m
+              - entity: sensor.system_monitor_load_5m
+                name: 5m
+              - entity: sensor.system_monitor_load_15m
+                name: 15m
+            name: CPU Load
+            icon: mdi:server
+            hours_to_show: 8
+            points_per_hour: 60
+          - type: tile
+            entity: sensor.system_monitor_last_boot
+            name: Last Boot
+          - type: tile
+            entity: binary_sensor.rpi_power_status
+          - type: tile
+            entity: sensor.system_monitor_ipv4_address_wlan0
+            name: Pi IP
