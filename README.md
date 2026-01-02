@@ -20,9 +20,10 @@ The core infrastructure is built on [**Proxmox VE**](https://www.proxmox.com/en/
 
 ## 🖥️ Hardware
 
-| Device           | Model      | CPU                                    | RAM         | Storage                                                                                        | Kernel             |
-| :--------------- | :--------- | :------------------------------------- | :---------- | :--------------------------------------------------------------------------------------------- | :----------------- |
-| **Proxmox Host** | HP 290 SFF | Intel Core i3-8100 @ 3.60GHz (4 Cores) | 32GB (DDR4) | 94GB (Boot/Root) + 4TB Samsung 990 PRO SSD + 5TB Seagate One Touch HDD + 12TB Seagate Exos HDD | Linux 6.14.8-2-pve |
+| Device           | Model                                                                         | CPU                                              | RAM         | Storage                                                                                        | Kernel / OS                 |
+| :--------------- | :---------------------------------------------------------------------------- | :----------------------------------------------- | :---------- | :--------------------------------------------------------------------------------------------- | :-------------------------- |
+| **Proxmox Host** | [HP 290 G1 SFF](https://support.hp.com/us-en/document/ish_4947891-4947986-16) | Intel Core i3-8100 @ 3.60GHz (4 Cores)           | 32GB (DDR4) | 94GB (Boot/Root) + 4TB Samsung 990 PRO SSD + 5TB Seagate One Touch HDD + 12TB Seagate Exos HDD | Linux 6.14.8-2-pve          |
+| **Router**       | [GL.iNet Flint 2 (GL-MT6000)](https://www.gl-inet.com/products/gl-mt6000/)    | MediaTek MT7986 (Filogic 830) Quad-core @ 2.0GHz | 1GB DDR4    | 8GB eMMC                                                                                       | OpenWrt 23.05 (Kernel 5.15) |
 
 > **Note:** System currently running PVE Manager 9.0.3.
 
@@ -39,7 +40,7 @@ The core infrastructure is built on [**Proxmox VE**](https://www.proxmox.com/en/
 
 ```mermaid
 graph TD
-    Internet["Internet: Starlink"] --> Router["Router: Flint 2<br/>(AdGuard Home Native)"]
+    Internet["Internet: Starlink"] --> Router["Router: Flint 2<br/>(AdGuard Home + Surfshark VPN)"]
 
     subgraph Proxmox_Node ["Proxmox VE Host"]
         direction TB
@@ -54,11 +55,11 @@ graph TD
         end
 
         %% Secondary Docker Host (Ubuntu VM)
-        subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
+subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
             direction TB
-            Container_QuickDB[("QuickDB Node")]
-            Container_Consensus[("Hyperbridge Consensus Relayer")]
-            Container_Messaging[(" Hyperbridge Messaging Relayer")]
+            Container_QuikDB[("QuikDB Node")]
+            Container_Consensus[("Hyperbridge Consensus")]
+            Container_Messaging[("Hyperbridge Messaging")]
         end
 
         %% Standalone Services
@@ -99,7 +100,7 @@ All LXCs below were provisioned using the [Proxmox VE Helper-Scripts](https://co
 | **102** | [`vaultwarden`](https://github.com/dani-garcia/vaultwarden)          | LXC  | [Vaultwarden](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/vaultwarden-install.sh) | Vaultwarden is a powerful and flexible alternative password manager to Bitwarden that is particularly suitable for users who want to manage their data themselves |
 | **103** | [`zigbee2mqtt`](https://github.com/Koenkk/zigbee2mqtt)               | LXC  | [Zigbee2MQTT](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/zigbee2mqtt-install.sh) | Zigbee2MQTT bridges events and allows you to control your Zigbee devices via MQTT.                                                                                |
 | **104** | [`mqtt`](https://github.com/mqtt)                                    | LXC  | [MQTT](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/mqtt-install.sh)               | MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT)Protocol                                                                             |
-| **105** | [`ubuntu server`](https://github.com/ubuntu)                         | VM   | [Ubuntu Server OS ISO](https://ubuntu.com/download/server)                                                       | Ubuntu is an open source software operating system that runs from the desktop, to the cloud, to all your internet connected things.                               |
+| **105** | [`ubuntu server`](https://github.com/ubuntu)                         | VM   | [Ubuntu Server OS ISO](https://ubuntu.com/download/server)                                                       | Host for Hyperbridge Relayers & QuickDB.                                                                                                                          |
 | **106** | [`openmediavault`](https://github.com/openmediavault/openmediavault) | VM   | [openmediavault ISO](https://www.openmediavault.org/download.html)                                               | openmediavault is the next generation network attached storage (NAS) solution based on Debian Linux.                                                              |
 | **107** | [`jellyfin`](https://github.com/jellyfin/jellyfin)                   | LXC  | [Jellyfin](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/jellyfin-install.sh`)      | Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media.                                                           |
 
@@ -117,9 +118,15 @@ These services run inside the **Docker Host (LXC 101)**. Configurations for thes
 
 ---
 
-## 📂 Repository Structure
+### 3. Blockchain Services (on VM 105)
 
-````text
+These services run manually on the Ubuntu Server.
+
+| Service                                                                                                | Image                                     | Config Location                                                         |
+| :----------------------------------------------------------------------------------------------------- | :---------------------------------------- | :---------------------------------------------------------------------- |
+| [**Messaging Relayer**](https://docs.hyperbridge.network/developers/network/relayer/messaging/relayer) | `polytopelabs/tesseract:latest`           | [`/proxmox/ubuntu-vm-105`](./proxmox/ubuntu-vm-105)                     |
+| [**Consensus Relayer**](https://docs.hyperbridge.network/developers/network/relayer/consensus/relayer) | `polytopelabs/tesseract-consensus:latest` | [`/proxmox/ubuntu-vm-105`](./proxmox/ubuntu-vm-105)                     |
+| [**QuikDB Node** ](https://nodes.quikdb.com/)                                                          | `bash script`                             | [`documentation`](https://docs.quikdb.com/getting-started/quick-deploy) |
 
 ## 📂 Repository Structure
 
@@ -137,17 +144,17 @@ These services run inside the **Docker Host (LXC 101)**. Configurations for thes
 │   └── sure-app/              # Sure App, Redis, Postgres
 │       └── docker-compose.yaml
 ├── proxmox/                   # Host & Non-Docker Configs
-    ├── home-assistant/        # HA configurations (YAMLs, backups)
-    │   ├── automations.yaml
-    │   ├── configuration.yaml
-    │   ├── dashboards.yaml
-    │   ├── modbus.yaml
-    │   └── template.yaml
-    └── ubuntu-vm-105/
-        └── hyperbridge-relayer/
-            ├── consensus-config.toml  # Config for Consensus Relayer
-            └── messaging-config.toml  # Config for Messaging Relayer
-````
+│   ├── home-assistant/        # HA configurations (YAMLs, backups)
+│   │   ├── automations.yaml
+│   │   ├── configuration.yaml
+│   │   ├── dashboards.yaml
+│   │   ├── modbus.yaml
+│   │   └── template.yaml
+│   └── ubuntu-vm-105/
+│       └── hyperbridge-relayer/
+│           ├── consensus-config.toml  # Config for Consensus Relayer
+│           └── messaging-config.toml  # Config for Messaging Relayer
+```
 
 ## ⚙️ Misc & Maintenance
 
