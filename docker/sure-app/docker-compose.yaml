@@ -26,9 +26,9 @@ x-rails-env: &rails_env
 
   # AI Connection
   AI_DEBUG_MODE: "true"
-  OPENAI_URI_BASE: http://ollama:11434/v1
-  OPENAI_ACCESS_TOKEN: "ollama"
-  OPENAI_MODEL: "llama3.1:latest"
+  OPENAI_URI_BASE: https://openrouter.ai/api/v1
+  OPENAI_ACCESS_TOKEN: ${OPEN_ROUTER_API}
+  OPENAI_MODEL: "google/gemini-2.5-flash"
 
 services:
   # ---------------------------------------------------------------------------
