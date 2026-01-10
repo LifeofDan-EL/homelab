@@ -1,6 +1,6 @@
 services:
   gluetun:
-    image: qmcgaw/gluetun:latest
+    image: qmcgaw/gluetun:v3.41
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -15,7 +15,6 @@ services:
       - 8686:8686 # Lidarr Web UI
       - 6767:6767 # Bazarr Web UI
       - 9705:9705 # Huntarr Web UI
-      - 11011:11011 # Cleanuparr Web UI
       - 8787:8787 # Bookshelf (Readarr)
       - 8191:8191 # FlareSolverr
       - 6881:6881 # TCP
@@ -29,8 +28,8 @@ services:
       - OPENVPN_USER=${OPENVPN_USER}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
       - OPENVPN_PROTOCOL=udp
-      - OPENVPN_MSSFIX=1300
-      - SERVER_COUNTRIES=Netherlands
+      - OPENVPN_MSSFIX=1280
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
       - TZ=${TIMEZONE}
       - DNS_ADDRESS=8.8.8.8
     restart: unless-stopped
@@ -189,15 +188,18 @@ services:
       - /opt/stacks/huntarr/config:/config
     restart: unless-stopped
 
-  cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:latest
-    container_name: cleanuparr
-    network_mode: "service:gluetun"
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
     environment:
       - PUID=0
       - PGID=0
       - TZ=${TIMEZONE}
-      - PORT=11011
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM}
     volumes:
-      - /opt/stacks/cleanuparr/config:/config
+      - /opt/stacks/plex/config:/config
+      - ${DATA_LOCATION}:/data
+    ports:
+      - 32400:32400
     restart: unless-stopped
