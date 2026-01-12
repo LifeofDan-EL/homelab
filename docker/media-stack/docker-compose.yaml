@@ -15,7 +15,7 @@ services:
       - 8686:8686 # Lidarr Web UI
       - 6767:6767 # Bazarr Web UI
       - 9705:9705 # Huntarr Web UI
-      - 8787:8787 # Bookshelf (Readarr)
+      - 8787:8787 # Readarr Web UI
       - 8191:8191 # FlareSolverr
       - 6881:6881 # TCP
       - 6881:6881/udp # UDP
@@ -202,4 +202,21 @@ services:
       - ${DATA_LOCATION}:/data
     ports:
       - 32400:32400
+    restart: unless-stopped
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+      - AUDIOBOOKSHELF_UID=0
+      - AUDIOBOOKSHELF_GID=0
+    ports:
+      - 13378:80
+    volumes:
+      - /opt/stacks/audiobookshelf/config:/config
+      - /opt/stacks/audiobookshelf/metadata:/metadata
+      - ${DATA_LOCATION}:/data
     restart: unless-stopped
