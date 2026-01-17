@@ -55,11 +55,17 @@ graph TD
         end
 
         %% Secondary Docker Host (Ubuntu VM)
-subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
+        subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
             direction TB
             Container_QuikDB[("QuikDB Node")]
             Container_Consensus[("Hyperbridge Consensus")]
             Container_Messaging[("Hyperbridge Messaging")]
+        end
+
+        %% NEW: Coolify Host
+        subgraph VM_Coolify ["VM 108: Ubuntu Playground"]
+             direction TB
+             App_Coolify[("Coolify")]
         end
 
         %% Standalone Services
@@ -73,7 +79,7 @@ subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
         subgraph Docker_Stacks ["Docker Stacks (on LXC 101)"]
             Stack_NPM["Nginx Proxy Mgr"]
             Stack_Media["Media Stack"]
-            Stack_Solar["Solar Agent"]
+            Stack_Solar["n8n Stack"]
             Stack_Sure["Sure App"]
             Stack_Speed["Speedtest"]
         end
@@ -103,18 +109,19 @@ All LXCs below were provisioned using the [Proxmox VE Helper-Scripts](https://co
 | **105** | [`ubuntu server`](https://github.com/ubuntu)                         | VM   | [Ubuntu Server OS ISO](https://ubuntu.com/download/server)                                                       | Host for Hyperbridge Relayers & QuickDB.                                                                                                                          |
 | **106** | [`openmediavault`](https://github.com/openmediavault/openmediavault) | VM   | [openmediavault ISO](https://www.openmediavault.org/download.html)                                               | openmediavault is the next generation network attached storage (NAS) solution based on Debian Linux.                                                              |
 | **107** | [`jellyfin`](https://github.com/jellyfin/jellyfin)                   | LXC  | [Jellyfin](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/jellyfin-install.sh`)      | Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media.                                                           |
+| **108** | [`ubuntu playground`](https://github.com/ubuntu)                     | VM   | [Ubuntu Server OS ISO](https://ubuntu.com/download/server)                                                       | Host for [Coolify](https://github.com/coollabsio/coolify) and testing things.                                                                                     |
 
 ### 2. Docker Stacks
 
 These services run inside the **Docker Host (LXC 101)**. Configurations for these can be found in the `/docker` directory of this repo.
 
-| Stack Name              | Services Included                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Config Location                                               |
-| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
-| **Media**               | [Bazarr](https://github.com/morpheus65535/bazarr), [Plex](https://www.plex.tv/media-server-downloads/), [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr), [Gluetun](https://github.com/qdm12/gluetun), [Huntarr](https://github.com/plexguide/Huntarr.io), [Jellyseerr](https://github.com/seerr-team/seerr), [Lidarr](https://github.com/Lidarr/Lidarr), [Prowlarr](https://github.com/Prowlarr/Prowlarr), [Qbittorrent](https://github.com/qbittorrent/qBittorrent), [Radarr](https://github.com/Radarr/Radarr), [Bookshelf fork of Readarr](https://github.com/pennydreadful/bookshelf), [Sonarr](https://github.com/Sonarr/Sonarr) | [`/docker/media-stack`](./docker/media-stack)                 |
-| **Nginx Proxy Manager** | [Nginx](https://github.com/nginx/nginx) , [Maria DB](https://github.com/jc21/docker-mariadb-aria)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | [`/docker/nginx-proxy-manager`](./docker/nginx-proxy-manager) |
-| **Solar Agent**         | [Cloudflared](https://github.com/cloudflare/cloudflared) , [n8n](https://github.com/n8n-io/n8n), [Ollama](https://github.com/ollama/ollama), [Qdrant](https://github.com/qdrant/qdrant), [Postgres](https://github.com/postgres/postgres)                                                                                                                                                                                                                                                                                                                                                                                                          | [`/docker/solar-agent`](./docker/solar-agent)                 |
-| **Speedtest Tracker**   | [Speedtest Tracker ](https://github.com/alexjustesen/speedtest-tracker)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | [`/docker/speedtest`](./docker/speedtest)                     |
-| **Sure App**            | [Sure app](https://github.com/we-promise/sure), [Redis](https://github.com/redis/redis), [Postgres](https://github.com/postgres/postgres), [Postgres local backup ](https://github.com/prodrigestivill/docker-postgres-backup-local)                                                                                                                                                                                                                                                                                                                                                                                                               | [`/docker/sure-app`](./docker/sure-app)                       |
+| Stack Name              | Services Included                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Config Location                                               |
+| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| **Media**               | [Audiobookshelf](https://github.com/advplyr/audiobookshelf), [Bazarr](https://github.com/morpheus65535/bazarr), [Bookshelf](https://github.com/pennydreadful/bookshelf), [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr), [Gluetun](https://github.com/qdm12/gluetun), [Huntarr](https://github.com/plexguide/Huntarr.io), [Jellyseerr](https://github.com/seerr-team/seerr), [Lidarr](https://github.com/Lidarr/Lidarr),[Plex](https://www.plex.tv/media-server-downloads/), [Prowlarr](https://github.com/Prowlarr/Prowlarr), [Radarr](https://github.com/Radarr/Radarr), [Sonarr](https://github.com/Sonarr/Sonarr), [Qbittorrent](https://github.com/qbittorrent/qBittorrent) | [`/docker/media-stack`](./docker/media-stack)                 |
+| **Nginx Proxy Manager** | [Nginx](https://github.com/nginx/nginx), [Maria DB](https://github.com/jc21/docker-mariadb-aria)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | [`/docker/nginx-proxy-manager`](./docker/nginx-proxy-manager) |
+| **n8n**                 | [Cloudflared](https://github.com/cloudflare/cloudflared), [Kuma](https://github.com/louislam/uptime-kuma) ,[n8n](https://github.com/n8n-io/n8n), [Ollama](https://github.com/ollama/ollama), [Postgres](https://github.com/postgres/postgres), [Redis](https://github.com/redis/redis), [Qdrant](https://github.com/qdrant/qdrant)                                                                                                                                                                                                                                                                                                                                                             | [`/docker/n8n-stack`](./docker/n8n-stack/)                    |
+| **Speedtest Tracker**   | [Speedtest Tracker ](https://github.com/alexjustesen/speedtest-tracker)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | [`/docker/speedtest`](./docker/speedtest)                     |
+| **Sure App**            | [Sure app](https://github.com/we-promise/sure), [Redis](https://github.com/redis/redis), [Postgres](https://github.com/postgres/postgres), [Postgres local backup ](https://github.com/prodrigestivill/docker-postgres-backup-local)                                                                                                                                                                                                                                                                                                                                                                                                                                                           | [`/docker/sure-app`](./docker/sure-app)                       |
 
 ---
 
@@ -137,7 +144,7 @@ These services run manually on the Ubuntu Server.
 │   │   └── docker-compose.yaml
 │   ├── nginx-proxy-manager/   # NPM and MariaDB
 │   │   └── docker-compose.yaml
-│   ├── solar-agent/           # Cloudflared, n8n, Ollama, Qdrant
+│   ├── n8n-stack/           # Cloudflared, n8n, Ollama, Qdrant
 │   │   └── docker-compose.yaml
 │   ├── speedtest/             # Speedtest Tracker
 │   │   └── docker-compose.yaml
@@ -154,6 +161,8 @@ These services run manually on the Ubuntu Server.
 │       └── hyperbridge-relayer/
 │           ├── consensus-config.toml  # Config for Consensus Relayer
 │           └── messaging-config.toml  # Config for Messaging Relayer
+└── scripts/
+    └── backup-all.sh     # Encrypt and backup Sure and n8n stacks with data to Cloudinary R2
 ```
 
 ## ⚙️ Misc & Maintenance

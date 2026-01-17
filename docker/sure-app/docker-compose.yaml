@@ -1,8 +1,5 @@
 version: "3.8"
 
-# -----------------------------------------------------------------------------
-# Reusable Environments (Anchors)
-# -----------------------------------------------------------------------------
 x-db-env: &db_env
   POSTGRES_USER: ${POSTGRES_USER}
   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -10,30 +7,16 @@ x-db-env: &db_env
 
 x-rails-env: &rails_env
   <<: *db_env
-
   SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-
-  # App Settings
   SELF_HOSTED: "true"
   RAILS_FORCE_SSL: "false"
   RAILS_ASSUME_SSL: "false"
   HOST: ${HOST_NAME}
-
-  # Internal Connections
   DB_HOST: sure_db
   DB_PORT: 5432
   REDIS_URL: redis://sure_redis:6379/1
 
-  # AI Connection
-  AI_DEBUG_MODE: "true"
-  OPENAI_URI_BASE: https://openrouter.ai/api/v1
-  OPENAI_ACCESS_TOKEN: ${OPEN_ROUTER_API}
-  OPENAI_MODEL: "google/gemini-2.5-flash"
-
 services:
-  # ---------------------------------------------------------------------------
-  # 1. Web Interface
-  # ---------------------------------------------------------------------------
   web:
     image: ghcr.io/we-promise/sure:latest
     container_name: sure_web
@@ -51,11 +34,7 @@ services:
         condition: service_healthy
     networks:
       - sure_net
-      - solar_net
 
-  # ---------------------------------------------------------------------------
-  # 2. Worker (The Brains) - REQUIRED for Chat to work
-  # ---------------------------------------------------------------------------
   worker:
     image: ghcr.io/we-promise/sure:latest
     container_name: sure_worker
@@ -72,11 +51,7 @@ services:
         condition: service_healthy
     networks:
       - sure_net
-      - solar_net
 
-  # ---------------------------------------------------------------------------
-  # 3. Database
-  # ---------------------------------------------------------------------------
   sure_db:
     image: postgres:16
     container_name: sure_db
@@ -85,6 +60,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     environment:
       <<: *db_env
+    ports:
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -93,9 +70,6 @@ services:
     networks:
       - sure_net
 
-  # ---------------------------------------------------------------------------
-  # 4. Cache
-  # ---------------------------------------------------------------------------
   sure_redis:
     image: redis:latest
     container_name: sure_redis
@@ -110,24 +84,21 @@ services:
     networks:
       - sure_net
 
-  # ---------------------------------------------------------------------------
-  # 5. Automated Database Backup
-  # ---------------------------------------------------------------------------
   backup:
     image: prodrigestivill/postgres-backup-local
     container_name: sure_backup
     restart: unless-stopped
     volumes:
-      - backup_data:/backups
+      - /opt/sure-data/backups:/backups
     environment:
       - POSTGRES_HOST=sure_db
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - SCHEDULE=@daily # Runs once a day at midnight
-      - BACKUP_KEEP_DAYS=7 # Keeps the last 7 days of backups
-      - BACKUP_KEEP_WEEKS=4 # Keeps 4 weekly backups
-      - BACKUP_KEEP_MONTHS=6 # Keeps 6 monthly backups
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
     depends_on:
       - sure_db
     networks:
@@ -137,14 +108,10 @@ volumes:
   app_storage:
   postgres_data:
   redis_data:
-  backup_data:
 
 networks:
-  # Internal network for Sure to talk to its own DB
   sure_net:
+    name: sure_net
     driver: bridge
-
-  # Connection to my existing stack
-  solar_net:
-    external: true
-    name: solar-agent_default
+    driver_opts:
+      com.docker.network.driver.mtu: 1280

@@ -1,0 +1,123 @@
+version: "3.8"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: always
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Africa/Lagos
+      - NODE_ENV=production
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - N8N_SECURE_COOKIE=false
+      - N8N_CONCURRENCY_PRODUCTION_LIMIT=5
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - DB_ENCRYPTION_KEY=${DB_ENCRYPTION_KEY}
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - EXECUTIONS_TIMEOUT=300
+      - EXECUTIONS_TIMEOUT_MAX=600
+      - UV_THREADPOOL_SIZE=128
+      - N8N_LOG_LEVEL=debug
+      - N8N_REQUEST_TIMEOUT=300000
+
+      - HTTPS_PROXY=
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv6.conf.default.disable_ipv6=1
+    networks:
+      - n8n_net
+    volumes:
+      - n8n_data:/home/node/.n8n
+    deploy: # ← Added resource limits
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cf_tunnel
+    restart: always
+    command: tunnel run --protocol http2
+    environment:
+      - TUNNEL_TOKEN=${TOKEN}
+    networks:
+      - n8n_net
+
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant
+    restart: always
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - n8n_net
+
+  postgres:
+    image: postgres:16
+    container_name: solar_db
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - n8n_net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - n8n_net
+
+  redis:
+    image: redis:alpine
+    container_name: n8n_redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - n8n_net
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime_kuma
+    restart: always
+    volumes:
+      - uptime_kuma_data:/app/data
+    ports:
+      - "3001:3001"
+    networks:
+      - n8n_net
+
+volumes:
+  n8n_data:
+  qdrant_data:
+  postgres_data:
+  ollama_data:
+  redis_data:
+  uptime_kuma_data:
+
+networks:
+  n8n_net:
+    name: n8n_net
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1280
