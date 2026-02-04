@@ -1,0 +1,70 @@
+version: "3.7"
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    restart: always
+    ports:
+      - "4000:4000"
+    networks:
+      - ai_shared_net
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      echo "$$LITELLM_CONFIG_CONTENT" > /app/config.yaml && 
+      litellm --config /app/config.yaml --detailed_debug
+    environment:
+      LITELLM_CONFIG_CONTENT: |
+        general_settings:
+          master_key: ${MATSER_KEY}
+
+        model_list:
+          - model_name: daily-driver
+            litellm_params:
+              model: "ollama/huihui_ai/qwen3-abliterated:0.6b"
+              api_base: http://ollama:11434
+
+          - model_name: heavy-lifter
+            litellm_params:
+              model: "ollama/huihui_ai/qwen3-vl-abliterated:4b"
+              api_base: http://192.168.8.30:11434 
+
+          - model_name: nomic-embed-text
+            litellm_params:
+              model: "ollama/nomic-embed-text:latest"
+              api_base: http://ollama:11434
+
+        router_settings:
+          fallbacks:
+            - heavy-lifter: ["daily-driver"]
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - ai_shared_net
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: always
+    ports:
+      - "6333:6333"
+    volumes:
+      - n8n-stack_qdrant_data:/qdrant/storage
+    networks:
+      - ai_shared_net
+
+volumes:
+  ollama_data:
+  n8n-stack_qdrant_data:
+    external: true
+
+networks:
+  ai_shared_net:
+    external: true

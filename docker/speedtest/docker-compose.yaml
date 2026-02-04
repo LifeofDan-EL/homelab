@@ -10,6 +10,10 @@ services:
       - PGID=1000
       - DB_CONNECTION=sqlite
       - APP_KEY=${SPEED_APP_KEY}
+      - APP_DEBUG=true
+      - APP_URL=http://speed.lifeofdanel.xyz/
+      - PUBLIC_DASHBOARD=true
+      - SPEEDTEST_SCHEDULE=*/10 * * * *
     volumes:
       - /opt/stacks/speedtest/data:/config
       - /opt/stacks/speedtest/ssl-keys:/config/keys

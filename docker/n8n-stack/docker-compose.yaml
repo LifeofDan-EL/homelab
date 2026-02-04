@@ -31,9 +31,11 @@ services:
       - net.ipv6.conf.default.disable_ipv6=1
     networks:
       - n8n_net
+      - ai_shared_net
     volumes:
       - n8n_data:/home/node/.n8n
-    deploy: # ← Added resource limits
+      - /tmp:/tmp:ro
+    deploy:
       resources:
         limits:
           memory: 2G
@@ -50,17 +52,6 @@ services:
     networks:
       - n8n_net
 
-  qdrant:
-    image: qdrant/qdrant
-    container_name: qdrant
-    restart: always
-    ports:
-      - "6333:6333"
-    volumes:
-      - qdrant_data:/qdrant/storage
-    networks:
-      - n8n_net
-
   postgres:
     image: postgres:16
     container_name: solar_db
@@ -73,17 +64,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    networks:
-      - n8n_net
-
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    restart: always
-    volumes:
-      - ollama_data:/root/.ollama
     networks:
       - n8n_net
 
@@ -109,9 +89,7 @@ services:
 
 volumes:
   n8n_data:
-  qdrant_data:
   postgres_data:
-  ollama_data:
   redis_data:
   uptime_kuma_data:
 
@@ -121,3 +99,5 @@ networks:
     driver: bridge
     driver_opts:
       com.docker.network.driver.mtu: 1280
+  ai_shared_net:
+    external: true

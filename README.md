@@ -77,11 +77,12 @@ graph TD
 
         %% Main Docker Stacks
         subgraph Docker_Stacks ["Docker Stacks (on LXC 101)"]
-            Stack_NPM["Nginx Proxy Mgr"]
+            Stack_AI["AI Stack"]
             Stack_Media["Media Stack"]
+            Stack_NPM["Nginx Proxy Mgr"]
             Stack_Solar["n8n Stack"]
-            Stack_Sure["Sure App"]
             Stack_Speed["Speedtest"]
+            Stack_Sure["Sure App"]
         end
 
         %% Connections
@@ -117,9 +118,10 @@ These services run inside the **Docker Host (LXC 101)**. Configurations for thes
 
 | Stack Name              | Services Included                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Config Location                                               |
 | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| **AI**                  | [LiteLLM](https://github.com/BerriAI/litellm), [Ollama](https://github.com/ollama/ollama)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | [`/docker/ai-stack`](./docker/ai-stack)                       |
 | **Media**               | [Audiobookshelf](https://github.com/advplyr/audiobookshelf), [Bazarr](https://github.com/morpheus65535/bazarr), [Bookshelf](https://github.com/pennydreadful/bookshelf), [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr), [Gluetun](https://github.com/qdm12/gluetun), [Huntarr](https://github.com/plexguide/Huntarr.io), [Jellyseerr](https://github.com/seerr-team/seerr), [Lidarr](https://github.com/Lidarr/Lidarr),[Plex](https://www.plex.tv/media-server-downloads/), [Prowlarr](https://github.com/Prowlarr/Prowlarr), [Radarr](https://github.com/Radarr/Radarr), [Sonarr](https://github.com/Sonarr/Sonarr), [Qbittorrent](https://github.com/qbittorrent/qBittorrent) | [`/docker/media-stack`](./docker/media-stack)                 |
-| **Nginx Proxy Manager** | [Nginx](https://github.com/nginx/nginx), [Maria DB](https://github.com/jc21/docker-mariadb-aria)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | [`/docker/nginx-proxy-manager`](./docker/nginx-proxy-manager) |
-| **n8n**                 | [Cloudflared](https://github.com/cloudflare/cloudflared), [Kuma](https://github.com/louislam/uptime-kuma) ,[n8n](https://github.com/n8n-io/n8n), [Ollama](https://github.com/ollama/ollama), [Postgres](https://github.com/postgres/postgres), [Redis](https://github.com/redis/redis), [Qdrant](https://github.com/qdrant/qdrant)                                                                                                                                                                                                                                                                                                                                                             | [`/docker/n8n-stack`](./docker/n8n-stack/)                    |
+| **n8n**                 | [Cloudflared](https://github.com/cloudflare/cloudflared), [Kuma](https://github.com/louislam/uptime-kuma) ,[n8n](https://github.com/n8n-io/n8n), [Postgres](https://github.com/postgres/postgres), [Redis](https://github.com/redis/redis), [Qdrant](https://github.com/qdrant/qdrant)                                                                                                                                                                                                                                                                                                                                                                                                         | [`/docker/n8n-stack`](./docker/n8n-stack)                     |
+| **Nginx Proxy Manager** | [Maria DB](https://github.com/jc21/docker-mariadb-aria) , [Nginx](https://github.com/nginx/nginx)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | [`/docker/nginx-proxy-manager`](./docker/nginx-proxy-manager) |
 | **Speedtest Tracker**   | [Speedtest Tracker ](https://github.com/alexjustesen/speedtest-tracker)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | [`/docker/speedtest`](./docker/speedtest)                     |
 | **Sure App**            | [Sure app](https://github.com/we-promise/sure), [Redis](https://github.com/redis/redis), [Postgres](https://github.com/postgres/postgres), [Postgres local backup ](https://github.com/prodrigestivill/docker-postgres-backup-local)                                                                                                                                                                                                                                                                                                                                                                                                                                                           | [`/docker/sure-app`](./docker/sure-app)                       |
 
@@ -140,11 +142,13 @@ These services run manually on the Ubuntu Server.
 ```text
 
 ├── docker/                    # Docker Compose files (LXC 101 Stacks)
-│   ├── media-stack/           # Arrs, Jellyseerr, Qbittorrent, Gluetun
+│   ├── ai-stack/           # ollama, LiteLLM, Qdrant
+│   │   └── docker-compose.yaml
+|   ├── media-stack/           # Arrs, Jellyseerr, Qbittorrent, Gluetun
 │   │   └── docker-compose.yaml
 │   ├── nginx-proxy-manager/   # NPM and MariaDB
 │   │   └── docker-compose.yaml
-│   ├── n8n-stack/           # Cloudflared, n8n, Ollama, Qdrant
+│   ├── n8n-stack/           # Cloudflared, n8n
 │   │   └── docker-compose.yaml
 │   ├── speedtest/             # Speedtest Tracker
 │   │   └── docker-compose.yaml
@@ -162,22 +166,17 @@ These services run manually on the Ubuntu Server.
 │           ├── consensus-config.toml  # Config for Consensus Relayer
 │           └── messaging-config.toml  # Config for Messaging Relayer
 └── scripts/
-    └── backup-all.sh     # Encrypt and backup Sure and n8n stacks with data to Cloudinary R2
+    ├── proxmox-backup.ps1  # Move backups on Proxmox host HDD to work laptop
+    └── backup-all.sh     # Encrypt and backup Sure and n8n stacks with data to Cloudflare R2
 ```
 
 ## ⚙️ Misc & Maintenance
 
 ### Backups
 
-- **LXC/VM (System):** Backed up **Weekly** to the NAS HDD.
-  - A replication copy is sent to a work laptop to ensure off-site redundancy.
-- **Docker (Data):** Backed up **Daily** to two separate local storages attached to the Proxmox host.
-
-### Updates
-
-- **Proxmox Host:** Manual monthly updates.
-- **LXC Containers:** `apt update && apt upgrade` monthly.
-- **Docker Containers:** Managed via Portainer
+- **LXC/VM (System):** Backed up **Weekly** to two HDDs attached to the home server.
+  - A replication copy is sent to a work laptop's SSD to ensure redundancy.
+- **Docker (Data):** Backed up **Daily** to Cloudflare R2 using a custom backup script that encrypts data before upload.
 
 ## 📜 License
 
