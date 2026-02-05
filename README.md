@@ -171,7 +171,7 @@ These services run manually on the Ubuntu Server.
     ├── backup-all.sh   # Encrypt and backup docker stacks with data to Cloudflare R2
     ├── proxmox-backup.ps1  # Move backups on Proxmox host HDD to work laptop
     ├── update-lxcs.sh     # Update the LXC containers using the helper scripts
-    └── update-proxmox  # Update Proxmox host
+    └── update-proxmox.sh  # Update Proxmox host
 ```
 
 ## ⚙️ Misc & Maintenance
