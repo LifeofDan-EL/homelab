@@ -73,6 +73,7 @@ graph TD
             LXC_Vault["LXC 102: Vaultwarden"]
             LXC_Jelly["LXC 107: Jellyfin"]
             VM_OMV["VM 106: OMV"]
+            LXC_Clawdbot["LXC 109: OpenClaw"]
         end
 
         %% Main Docker Stacks
@@ -98,7 +99,7 @@ graph TD
 
 ### 1. Proxmox LXC/VM Inventory
 
-All LXCs below were provisioned using the [Proxmox VE Helper-Scripts](https://community-scripts.github.io/ProxmoxVE/).
+Most LXCs below were provisioned using the [Proxmox VE Helper-Scripts](https://community-scripts.github.io/ProxmoxVE/).
 
 | ID      | Name                                                                 | Type | Helper Script Used                                                                                               | Notes                                                                                                                                                             |
 | :------ | :------------------------------------------------------------------- | :--- | :--------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -111,6 +112,7 @@ All LXCs below were provisioned using the [Proxmox VE Helper-Scripts](https://co
 | **106** | [`openmediavault`](https://github.com/openmediavault/openmediavault) | VM   | [openmediavault ISO](https://www.openmediavault.org/download.html)                                               | openmediavault is the next generation network attached storage (NAS) solution based on Debian Linux.                                                              |
 | **107** | [`jellyfin`](https://github.com/jellyfin/jellyfin)                   | LXC  | [Jellyfin](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/jellyfin-install.sh`)      | Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media.                                                           |
 | **108** | [`ubuntu playground`](https://github.com/ubuntu)                     | VM   | [Ubuntu Server OS ISO](https://ubuntu.com/download/server)                                                       | Host for [Coolify](https://github.com/coollabsio/coolify) and testing things.                                                                                     |
+| **109** | [`openclaw`](https://openclaw.ai/)                                   | LXC  | [OpenClaw script](https://openclaw.ai/install.sh)                                                                | OpenClaw is an OS gateway for AI agents across WhatsApp, Telegram, Discord, iMessage, and more.                                                                   |
 
 ### 2. Docker Stacks
 
@@ -118,9 +120,9 @@ These services run inside the **Docker Host (LXC 101)**. Configurations for thes
 
 | Stack Name              | Services Included                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Config Location                                               |
 | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
-| **AI**                  | [LiteLLM](https://github.com/BerriAI/litellm), [Ollama](https://github.com/ollama/ollama)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | [`/docker/ai-stack`](./docker/ai-stack)                       |
+| **AI**                  | [LiteLLM](https://github.com/BerriAI/litellm), [Ollama](https://github.com/ollama/ollama), [Qdrant](https://github.com/qdrant/qdrant)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | [`/docker/ai-stack`](./docker/ai-stack)                       |
 | **Media**               | [Audiobookshelf](https://github.com/advplyr/audiobookshelf), [Bazarr](https://github.com/morpheus65535/bazarr), [Bookshelf](https://github.com/pennydreadful/bookshelf), [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr), [Gluetun](https://github.com/qdm12/gluetun), [Huntarr](https://github.com/plexguide/Huntarr.io), [Jellyseerr](https://github.com/seerr-team/seerr), [Lidarr](https://github.com/Lidarr/Lidarr),[Plex](https://www.plex.tv/media-server-downloads/), [Prowlarr](https://github.com/Prowlarr/Prowlarr), [Radarr](https://github.com/Radarr/Radarr), [Sonarr](https://github.com/Sonarr/Sonarr), [Qbittorrent](https://github.com/qbittorrent/qBittorrent) | [`/docker/media-stack`](./docker/media-stack)                 |
-| **n8n**                 | [Cloudflared](https://github.com/cloudflare/cloudflared), [Kuma](https://github.com/louislam/uptime-kuma) ,[n8n](https://github.com/n8n-io/n8n), [Postgres](https://github.com/postgres/postgres), [Redis](https://github.com/redis/redis), [Qdrant](https://github.com/qdrant/qdrant)                                                                                                                                                                                                                                                                                                                                                                                                         | [`/docker/n8n-stack`](./docker/n8n-stack)                     |
+| **n8n**                 | [Cloudflared](https://github.com/cloudflare/cloudflared), [Kuma](https://github.com/louislam/uptime-kuma) ,[n8n](https://github.com/n8n-io/n8n), [Postgres](https://github.com/postgres/postgres), [Redis](https://github.com/redis/redis)                                                                                                                                                                                                                                                                                                                                                                                                                                                     | [`/docker/n8n-stack`](./docker/n8n-stack)                     |
 | **Nginx Proxy Manager** | [Maria DB](https://github.com/jc21/docker-mariadb-aria) , [Nginx](https://github.com/nginx/nginx)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | [`/docker/nginx-proxy-manager`](./docker/nginx-proxy-manager) |
 | **Speedtest Tracker**   | [Speedtest Tracker ](https://github.com/alexjustesen/speedtest-tracker)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | [`/docker/speedtest`](./docker/speedtest)                     |
 | **Sure App**            | [Sure app](https://github.com/we-promise/sure), [Redis](https://github.com/redis/redis), [Postgres](https://github.com/postgres/postgres), [Postgres local backup ](https://github.com/prodrigestivill/docker-postgres-backup-local)                                                                                                                                                                                                                                                                                                                                                                                                                                                           | [`/docker/sure-app`](./docker/sure-app)                       |
@@ -166,8 +168,10 @@ These services run manually on the Ubuntu Server.
 │           ├── consensus-config.toml  # Config for Consensus Relayer
 │           └── messaging-config.toml  # Config for Messaging Relayer
 └── scripts/
+    ├── backup-all.sh   # Encrypt and backup docker stacks with data to Cloudflare R2
     ├── proxmox-backup.ps1  # Move backups on Proxmox host HDD to work laptop
-    └── backup-all.sh     # Encrypt and backup Sure and n8n stacks with data to Cloudflare R2
+    ├── update-lxcs.sh     # Update the LXC containers using the helper scripts
+    └── update-proxmox  # Update Proxmox host
 ```
 
 ## ⚙️ Misc & Maintenance
@@ -177,6 +181,12 @@ These services run manually on the Ubuntu Server.
 - **LXC/VM (System):** Backed up **Weekly** to two HDDs attached to the home server.
   - A replication copy is sent to a work laptop's SSD to ensure redundancy.
 - **Docker (Data):** Backed up **Daily** to Cloudflare R2 using a custom backup script that encrypts data before upload.
+
+### Updates
+
+- **Proxmox Host:** Custom script runs monthly updates.
+- **LXC Containers:** Custom script runs monthly updates.
+- **Docker Containers:** Managed via Portainer.
 
 ## 📜 License
 
