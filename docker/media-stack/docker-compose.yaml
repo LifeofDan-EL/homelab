@@ -16,6 +16,7 @@ services:
       - 6767:6767 # Bazarr Web UI
       - 9705:9705 # Huntarr Web UI
       - 8787:8787 # Readarr Web UI
+      - 9191:9191 # Dispatcharr Web UI
       - 8191:8191 # FlareSolverr
       - 6881:6881 # TCP
       - 6881:6881/udp # UDP
@@ -160,6 +161,35 @@ services:
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
 
+  huntarr:
+    image: ghcr.io/plexguide/huntarr:latest
+    container_name: huntarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/huntarr/config:/config
+    restart: unless-stopped
+
+  dispatcharr:
+    image: ghcr.io/dispatcharr/dispatcharr:latest
+    container_name: dispatcharr
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    volumes:
+      - /opt/stacks/dispatcharr/config:/data
+    environment:
+      - DISPATCHARR_ENV=aio
+      - REDIS_HOST=localhost
+      - CELERY_BROKER_URL=redis://localhost:6379/0
+      - DISPATCHARR_LOG_LEVEL=info
+      - TZ=${TIMEZONE}
+    restart: unless-stopped
+
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
@@ -174,18 +204,6 @@ services:
       - gluetun
       - sonarr
       - radarr
-    restart: unless-stopped
-
-  huntarr:
-    image: ghcr.io/plexguide/huntarr:latest
-    container_name: huntarr
-    network_mode: "service:gluetun"
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=${TIMEZONE}
-    volumes:
-      - /opt/stacks/huntarr/config:/config
     restart: unless-stopped
 
   plex:
