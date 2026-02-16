@@ -76,22 +76,11 @@ services:
     networks:
       - n8n_net
 
-  uptime-kuma:
-    image: louislam/uptime-kuma:1
-    container_name: uptime_kuma
-    restart: always
-    volumes:
-      - uptime_kuma_data:/app/data
-    ports:
-      - "3001:3001"
-    networks:
-      - n8n_net
-
 volumes:
   n8n_data:
   postgres_data:
+
   redis_data:
-  uptime_kuma_data:
 
 networks:
   n8n_net:
