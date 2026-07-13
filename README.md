@@ -40,39 +40,18 @@ The core infrastructure is built on [**Proxmox VE**](https://www.proxmox.com/en/
 
 ```mermaid
 graph TD
-    Internet["Internet: Starlink"] --> Router["Router: Flint 2<br/>(AdGuard Home + Surfshark VPN)"]
+    Internet["Internet: Starlink"] --> Router["Router: Flint 2<br/>(AdGuard Home)"]
 
     subgraph Proxmox_Node ["Proxmox VE Host"]
         direction TB
 
-        %% Core Infrastructure
+        %% Core Infrastructure / IoT
         subgraph Core_Infra ["Core Infrastructure"]
             direction LR
-            LXC_Docker["LXC 101: Main Docker Host"]
+            LXC_Docker["LXC 101: Docker Host"]
             VM_HA["VM 100: Home Assistant"]
             LXC_MQTT["LXC 104: MQTT"]
             LXC_Z2M["LXC 103: Zigbee2MQTT"]
-        end
-
-        %% Secondary Docker Host (Ubuntu VM)
-        subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
-            direction TB
-            Container_QuikDB[("QuikDB Node")]
-            Container_Consensus[("Hyperbridge Consensus")]
-            Container_Messaging[("Hyperbridge Messaging")]
-        end
-
-        %% Ubuntu Playground
-        subgraph VM_Coolify ["VM 108: Ubuntu Playground"]
-             direction TB
-             App_Coolify[("Coolify")]
-        end
-
-        %% Business Apps
-        subgraph Business_Apps ["Business Apps"]
-            direction LR
-            LXC_Odoo["LXC 112: Odoo"]
-            LXC_ERPNext["LXC 113: ERPNext"]
         end
 
         %% Standalone Services
@@ -80,8 +59,26 @@ graph TD
             LXC_Vault["LXC 102: Vaultwarden"]
             LXC_Jelly["LXC 107: Jellyfin"]
             VM_OMV["VM 106: OMV"]
-            LXC_Clawdbot["LXC 109: Clawdbot"]
+            LXC_OpenClaw["LXC 109: OpenClaw"]
             LXC_Hermes["LXC 111: Hermes Agent"]
+        end
+
+        %% Business Apps
+        subgraph Business_Apps ["Business Apps"]
+            LXC_Odoo["LXC 112: Odoo"]
+            LXC_ERPNext["LXC 113: ERPNext"]
+        end
+
+        %% Secondary Docker Host (Ubuntu VM)
+        subgraph VM_Ubuntu ["VM 105: Ubuntu Server"]
+            Container_QuikDB["QuikDB Node"]
+            Container_Consensus["Hyperbridge Consensus"]
+            Container_Messaging["Hyperbridge Messaging"]
+        end
+
+        %% Ubuntu Playground
+        subgraph VM_Coolify ["VM 108: Ubuntu Playground"]
+             App_Coolify["Coolify"]
         end
 
         %% Main Docker Stacks
@@ -89,19 +86,25 @@ graph TD
             Stack_AI["AI Stack"]
             Stack_Media["Media Stack"]
             Stack_NPM["Nginx Proxy Mgr"]
-            Stack_Solar["n8n Stack"]
+            Stack_n8n["n8n Stack"]
             Stack_Observability["Observability Stack"]
             Stack_Speed["Speedtest"]
             Stack_Sure["Sure App"]
         end
 
-        %% Connections
+        %% Connections inside Proxmox
         LXC_Docker --> Docker_Stacks
         LXC_Z2M --> LXC_MQTT
         LXC_MQTT --> VM_HA
     end
 
-    Router --> Proxmox_Node
+    %% Network flow from Router to VMs/LXCs
+    Router --> LXC_Docker
+    Router --> LXC_Z2M
+    Router --> LXC_Vault
+    Router --> LXC_Odoo
+    Router --> Container_QuikDB
+    Router --> App_Coolify
 ```
 
 ## 🛠️ Services & Inventory
@@ -121,10 +124,10 @@ Most LXCs below were provisioned using the [Proxmox VE Helper-Scripts](https://c
 | **106** | [`openmediavault`](https://github.com/openmediavault/openmediavault) | VM   | [openmediavault ISO](https://www.openmediavault.org/download.html)                                               | openmediavault is the next generation network attached storage (NAS) solution based on Debian Linux.                                                              |
 | **107** | [`jellyfin`](https://github.com/jellyfin/jellyfin)                   | LXC  | [Jellyfin](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/jellyfin-install.sh`)      | Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media.                                                           |
 | **108** | [`ubuntu playground`](https://github.com/ubuntu)                     | VM   | [Ubuntu Server OS ISO](https://ubuntu.com/download/server)                                                       | Host for [Coolify](https://github.com/coollabsio/coolify) and testing things.                                                                                     |
-| **109** | [`clawdbot`](https://openclaw.ai/)                                   | LXC  | [OpenClaw script](https://openclaw.ai/install.sh)                                                                | Clawdbot is an AI agent gateway across WhatsApp, Telegram, Discord, iMessage, and more.                                                                           |
-| **111** | [`hermesagent`](https://github.com/hermes-agent)                     | LXC  | Manual install                                                                                                   | Hermes Agent service.                                                                                                                                             |
-| **112** | [`odoo`](https://github.com/odoo/odoo)                               | LXC  | [Odoo](https://community-scripts.github.io/ProxmoxVE/)                                                          | Odoo is a suite of open source business apps covering CRM, eCommerce, accounting, inventory, and more.                                                            |
-| **113** | [`erpnext`](https://github.com/frappe/erpnext)                       | LXC  | Manual install                                                                                                   | ERPNext is a full-featured open source ERP system built on the Frappe Framework.                                                                                  |
+| **109** | [`openclaw`](https://openclaw.ai/)                                   | LXC  | [OpenClaw script](https://openclaw.ai/install.sh)                                                                | OpenClaw is an OS gateway for AI agents across WhatsApp, Telegram, Discord, iMessage, and more.                                                                   |
+| **111** | [`hermesagent`](https://github.com/hermes-agent)                     | LXC  | [Hermes Agent](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/hermesagent-install.sh) | Hermes Agent service.                                                                                                                                             |
+| **112** | [`odoo`](https://github.com/odoo/odoo)                               | LXC  | [Odoo](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/odoo-install.sh)               | Odoo is a suite of open source business apps covering CRM, eCommerce, accounting, inventory, and more.                                                            |
+| **113** | [`erpnext`](https://github.com/frappe/erpnext)                       | LXC  | [ERPNext](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/install/erpnext-install.sh)         | ERPNext is a full-featured open source ERP system built on the Frappe Framework.                                                                                  |
 
 ### 2. Docker Stacks
 
