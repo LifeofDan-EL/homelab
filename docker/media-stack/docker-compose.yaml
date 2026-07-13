@@ -15,7 +15,6 @@ services:
       - 8686:8686     # Lidarr Web UI
       - 6767:6767     # Bazarr Web UI
       - 8787:8787     # Readarr Web UI
-      - 9191:9191     # Dispatcharr Web UI
       - 8191:8191     # FlareSolverr
       - 6881:6881     # TCP
       - 6881:6881/udp # UDP
@@ -163,10 +162,8 @@ services:
   dispatcharr:
     image: ghcr.io/dispatcharr/dispatcharr:latest
     container_name: dispatcharr
-    network_mode: "service:gluetun" 
-    depends_on:
-      gluetun:
-        condition: service_healthy
+    ports:
+      - 9191:9191 
     volumes:
       - /opt/stacks/dispatcharr/config:/data
     environment:
@@ -233,5 +230,3 @@ services:
       - /opt/stacks/audiobookshelf/metadata:/metadata
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
-
-

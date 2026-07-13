@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   n8n:
@@ -22,26 +22,25 @@ services:
       - EXECUTIONS_TIMEOUT=300
       - EXECUTIONS_TIMEOUT_MAX=600
       - UV_THREADPOOL_SIZE=128
-      - N8N_LOG_LEVEL=debug
+      - N8N_LOG_LEVEL=debug  
       - N8N_REQUEST_TIMEOUT=300000
-
-      - HTTPS_PROXY=
+      - HTTPS_PROXY= 
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
       - net.ipv6.conf.default.disable_ipv6=1
     networks:
-      - n8n_net
+      - n8n_net 
       - ai_shared_net
     volumes:
       - n8n_data:/home/node/.n8n
       - /tmp:/tmp:ro
-    deploy:
+    deploy:  
       resources:
         limits:
           memory: 2G
         reservations:
           memory: 1G
-
+        
   tunnel:
     image: cloudflare/cloudflared:latest
     container_name: cf_tunnel
@@ -51,7 +50,7 @@ services:
       - TUNNEL_TOKEN=${TOKEN}
     networks:
       - n8n_net
-
+        
   postgres:
     image: postgres:16
     container_name: solar_db
@@ -66,7 +65,7 @@ services:
       - "5432:5432"
     networks:
       - n8n_net
-
+        
   redis:
     image: redis:alpine
     container_name: n8n_redis
@@ -74,19 +73,27 @@ services:
     volumes:
       - redis_data:/data
     networks:
+      - n8n_net 
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: gotenberg
+    restart: always
+    ports:
+      - "3030:3000" 
+    networks:
       - n8n_net
 
 volumes:
   n8n_data:
   postgres_data:
-
   redis_data:
 
 networks:
-  n8n_net:
+  n8n_net: 
     name: n8n_net
     driver: bridge
     driver_opts:
-      com.docker.network.driver.mtu: 1280
-  ai_shared_net:
+      com.docker.network.driver.mtu: 1280 
+  ai_shared_net: 
     external: true
