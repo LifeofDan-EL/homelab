@@ -16,6 +16,7 @@ services:
       - 6767:6767 # Bazarr Web UI
       - 8787:8787 # Readarr Web UI
       - 8191:8191 # FlareSolverr
+      - 5800:5800 # JDownloader Web UI
       - 6881:6881 # TCP
       - 6881:6881/udp # UDP
     volumes:
@@ -31,6 +32,22 @@ services:
       - SERVER_COUNTRIES=${SERVER_COUNTRIES}
       - TZ=${TIMEZONE}
       - DNS_ADDRESS=8.8.8.8
+    restart: unless-stopped
+
+  jdownloader:
+    image: jlesage/jdownloader-2:latest
+    container_name: jdownloader
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TIMEZONE}
+    volumes:
+      - /opt/stacks/jdownloader/config:/config
+      - ${DATA_LOCATION}:/data
     restart: unless-stopped
 
   qbittorrent:

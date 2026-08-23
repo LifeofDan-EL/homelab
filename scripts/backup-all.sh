@@ -33,10 +33,11 @@ backup_volume() {
         docker run --rm \
             -v "$VOL_NAME":/source \
             -v "$DEST_DIR":/backup \
-            alpine tar -czf "/backup/${VOL_NAME}.tar.gz" -C /source .
+            alpine:3.20 tar -czf "/backup/${VOL_NAME}.tar.gz" -C /source .
         if [ $? -eq 0 ]; then echo "OK"; else echo "FAILED"; EXIT_CODE=1; fi
     else
         echo "   Volume $VOL_NAME not found (Skipping)"
+        EXIT_CODE=1
     fi
 }
 
@@ -54,12 +55,36 @@ backup_host_dir() {
     fi
 }
 
+backup_host_file() {
+    local SRC_FILE=$1
+    local DEST_DIR=$2
+    local ARCHIVE_NAME=$3
+    mkdir -p "$DEST_DIR"
+    if [ -f "$SRC_FILE" ]; then
+        echo -n "   $SRC_FILE... "
+        tar -czf "$DEST_DIR/${ARCHIVE_NAME}.tar.gz" -C "$(dirname "$SRC_FILE")" "$(basename "$SRC_FILE")"
+        if [ $? -eq 0 ]; then echo "OK"; else echo "FAILED"; EXIT_CODE=1; fi
+    else
+        echo "   File $SRC_FILE not found (Skipping)"
+    fi
+}
+
 stop_containers() {
-    for c in "$@"; do docker stop "$c" > /dev/null 2>&1; done
+    for c in "$@"; do
+        if ! docker stop "$c" > /dev/null 2>&1; then
+            echo "   WARNING: failed to stop container '$c' (may not exist or already stopped)"
+            EXIT_CODE=1
+        fi
+    done
 }
 
 start_containers() {
-    for c in "$@"; do docker start "$c" > /dev/null 2>&1; done
+    for c in "$@"; do
+        if ! docker start "$c" > /dev/null 2>&1; then
+            echo "   WARNING: failed to start container '$c' (may not exist)"
+            EXIT_CODE=1
+        fi
+    done
 }
 
 # =============================================================
@@ -68,7 +93,7 @@ start_containers() {
 
 # -- 4A. QDRANT -----------------------------------------------
 echo ""
-echo "[$(date)] [1/4] Backing up Qdrant Stack..."
+echo "[$(date)] [1/7] Backing up Qdrant Stack..."
 stop_containers "qdrant"
 
 backup_volume "n8n-stack_qdrant_data"   "$TEMP_DIR/qdrant"
@@ -77,7 +102,7 @@ start_containers "qdrant"
 
 # -- 4B. SURE STACK -------------------------------------------
 echo ""
-echo "[$(date)] [2/4] Backing up Sure Stack..."
+echo "[$(date)] [2/7] Backing up Sure Stack..."
 stop_containers "sure_web" "sure_worker" "sure_db" "sure_redis" "sure_backup"
 
 backup_volume "sure_app_postgres_data"  "$TEMP_DIR/sure"
@@ -89,7 +114,7 @@ start_containers "sure_db" "sure_redis" "sure_web" "sure_worker" "sure_backup"
 
 # -- 4C. SPEEDTEST TRACKER ------------------------------------
 echo ""
-echo "[$(date)] [3/4] Backing up Speedtest Tracker Stack..."
+echo "[$(date)] [3/7] Backing up Speedtest Tracker Stack..."
 stop_containers "speedtest-tracker"
 
 backup_host_dir "/opt/stacks/speedtest/data" "$TEMP_DIR/speedtest" "speedtest_data"
@@ -98,12 +123,42 @@ start_containers "speedtest-tracker"
 
 # -- 4D. N8N SOLAR POSTGRES -----------------------------------
 echo ""
-echo "[$(date)] [4/4] Backing up N8N Solar Postgres..."
+echo "[$(date)] [4/7] Backing up N8N Solar Postgres..."
 stop_containers "solar_db"
 
 backup_volume "n8n-stack_postgres_data" "$TEMP_DIR/n8n_solar"
 
 start_containers "solar_db"
+
+# -- 4E. COMIC STACK ------------------------------------------
+echo ""
+echo "[$(date)] [5/7] Backing up Comic Stack..."
+stop_containers "kavita" "komga"
+
+backup_volume "comic-stack_kavita_config" "$TEMP_DIR/comic"
+backup_volume "comic-stack_komga_config"  "$TEMP_DIR/comic"
+
+start_containers "kavita" "komga"
+
+# -- 4F. N8N APP DATA -------------------------------------------
+echo ""
+echo "[$(date)] [6/7] Backing up N8N App Data..."
+stop_containers "n8n" "n8n_redis"
+
+backup_volume "n8n-stack_n8n_data"    "$TEMP_DIR/n8n_appdata"
+backup_volume "n8n-stack_redis_data"  "$TEMP_DIR/n8n_appdata"
+
+start_containers "n8n" "n8n_redis"
+
+# -- 4G. DOCUMENSO --------------------------------------------
+echo ""
+echo "[$(date)] [7/7] Backing up Documenso Stack..."
+stop_containers "documenso-documenso-1" "documenso-database-1"
+
+backup_volume "documenso_database" "$TEMP_DIR/documenso"
+backup_host_file "/opt/documenso/cert.p12" "$TEMP_DIR/documenso" "documenso_signing_cert"
+
+start_containers "documenso-database-1" "documenso-documenso-1"
 
 # =============================================================
 # --- 5. VERIFY -----------------------------------------------

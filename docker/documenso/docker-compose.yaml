@@ -3,6 +3,7 @@ name: documenso-production
 services:
   database:
     image: postgres:15
+    container_name: documenso_db
     environment:
       - POSTGRES_USER=${POSTGRES_USER:?err}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
@@ -19,6 +20,7 @@ services:
 
   documenso:
     image: documenso/documenso:latest
+    container_name: documenso
     depends_on:
       database:
         condition: service_healthy
