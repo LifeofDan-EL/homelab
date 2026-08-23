@@ -1,0 +1,92 @@
+version: '3.8'
+x-db-env: &db_env
+  POSTGRES_USER: ${POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_DB: ${POSTGRES_DB}
+x-rails-env: &rails_env
+  <<: *db_env
+  SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+  SELF_HOSTED: "true"
+  RAILS_FORCE_SSL: "false"
+  RAILS_ASSUME_SSL: "false"
+  HOST: ${HOST_NAME}
+  DB_HOST: sure_test_db
+  DB_PORT: 5432
+  REDIS_URL: redis://sure_test_redis:6379/1
+  SMTP_ADDRESS: ${SMTP_ADDRESS}
+  SMTP_PORT: ${SMTP_PORT}
+  SMTP_USERNAME: ${SMTP_USERNAME}
+  SMTP_PASSWORD: ${SMTP_PASSWORD}
+  SMTP_TLS_ENABLED: ${SMTP_TLS_ENABLED}
+  EMAIL_SENDER: ${EMAIL_SENDER}
+  APP_DOMAIN: ${APP_DOMAIN}
+services:
+  web:
+    image: sure-test:v0.7.4-alpha.7
+    container_name: sure_test_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - app_storage:/rails/storage
+    environment:
+      <<: *rails_env
+    depends_on:
+      sure_test_db:
+        condition: service_healthy
+      sure_test_redis:
+        condition: service_healthy
+    networks:
+      - sure_test_net
+  worker:
+    image: sure-test:v0.7.4-alpha.7
+    container_name: sure_test_worker
+    restart: unless-stopped
+    command: bundle exec sidekiq
+    volumes:
+      - app_storage:/rails/storage
+    environment:
+      <<: *rails_env
+    depends_on:
+      sure_test_db:
+        condition: service_healthy
+      sure_test_redis:
+        condition: service_healthy
+    networks:
+      - sure_test_net
+  sure_test_db:
+    image: postgres:16
+    container_name: sure_test_db
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      <<: *db_env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sure_test_net
+  sure_test_redis:
+    image: redis:latest
+    container_name: sure_test_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sure_test_net
+volumes:
+  app_storage:
+  postgres_data:
+  redis_data:
+networks:
+  sure_test_net:
+    name: sure_test_net
+    driver: bridge

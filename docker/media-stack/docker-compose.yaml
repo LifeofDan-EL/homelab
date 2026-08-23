@@ -8,15 +8,15 @@ services:
       - /dev/net/tun:/dev/net/tun
     ports:
       - 8888:8888/tcp # HTTP Proxy
-      - 8080:8080     # qBittorrent Web UI
-      - 9696:9696     # Prowlarr Web UI
-      - 8989:8989     # Sonarr Web UI
-      - 7878:7878     # Radarr Web UI
-      - 8686:8686     # Lidarr Web UI
-      - 6767:6767     # Bazarr Web UI
-      - 8787:8787     # Readarr Web UI
-      - 8191:8191     # FlareSolverr
-      - 6881:6881     # TCP
+      - 8080:8080 # qBittorrent Web UI
+      - 9696:9696 # Prowlarr Web UI
+      - 8989:8989 # Sonarr Web UI
+      - 7878:7878 # Radarr Web UI
+      - 8686:8686 # Lidarr Web UI
+      - 6767:6767 # Bazarr Web UI
+      - 8787:8787 # Readarr Web UI
+      - 8191:8191 # FlareSolverr
+      - 6881:6881 # TCP
       - 6881:6881/udp # UDP
     volumes:
       - /opt/stacks/gluetun/config:/gluetun
@@ -158,12 +158,12 @@ services:
       - /opt/stacks/readarr/config:/config
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
-    
+
   dispatcharr:
     image: ghcr.io/dispatcharr/dispatcharr:latest
     container_name: dispatcharr
     ports:
-      - 9191:9191 
+      - 9191:9191
     volumes:
       - /opt/stacks/dispatcharr/config:/data
     environment:
@@ -173,10 +173,10 @@ services:
       - DISPATCHARR_LOG_LEVEL=info
       - TZ=${TIMEZONE}
     restart: unless-stopped
-    
+
   seerr:
     image: ghcr.io/seerr-team/seerr:latest
-    init: true                       
+    init: true
     container_name: seerr
     environment:
       - LOG_LEVEL=info
@@ -184,7 +184,7 @@ services:
     ports:
       - 5055:5055
     volumes:
-      - /opt/stacks/jellyseerr/config:/app/config 
+      - /opt/stacks/jellyseerr/config:/app/config
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
       start_period: 20s
@@ -197,7 +197,6 @@ services:
       - radarr
     restart: unless-stopped
 
- 
   plex:
     image: lscr.io/linuxserver/plex:latest
     container_name: plex
@@ -206,10 +205,10 @@ services:
       - PGID=0
       - TZ=${TIMEZONE}
       - VERSION=docker
-      - PLEX_CLAIM=${PLEX_CLAIM} 
+      - PLEX_CLAIM=${PLEX_CLAIM}
     volumes:
       - /opt/stacks/plex/config:/config
-      - ${DATA_LOCATION}:/data 
+      - ${DATA_LOCATION}:/data
     ports:
       - 32400:32400
     restart: unless-stopped

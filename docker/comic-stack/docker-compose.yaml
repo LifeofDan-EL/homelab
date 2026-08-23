@@ -1,0 +1,30 @@
+name: comic-stack
+
+services:
+  kavita:
+    image: jvmilazz0/kavita:latest
+    container_name: kavita
+    restart: unless-stopped
+    ports:
+      - "2000:5000"
+    volumes:
+      - kavita_config:/kavita/config
+      - /media/nas/data/media/books/Comics:/data:ro
+    environment:
+      - TZ=Africa/Lagos
+
+  komga:
+    image: gotson/komga:latest
+    container_name: komga
+    restart: unless-stopped
+    ports:
+      - "2100:25600"
+    volumes:
+      - komga_config:/config
+      - /media/nas/data/media/books/Comics:/data:ro
+    environment:
+      - TZ=Africa/Lagos
+
+volumes:
+  kavita_config:
+  komga_config:

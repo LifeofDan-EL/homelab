@@ -6,6 +6,7 @@ http:
   trusted_proxies:
     - 172.30.33.0/24
     - 127.0.0.1
+    - 192.168.8.0/24
   ip_ban_enabled: true
   login_attempts_threshold: 2
   cors_allowed_origins: "*"
@@ -19,6 +20,7 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 template: !include template.yaml
 modbus: !include modbus.yaml
+sensor: !include sensors.yaml
 
 api:
 
@@ -53,17 +55,10 @@ mqtt_statestream:
 notify:
   - platform: telegram
     name: "daniel"
-    chat_id: 123456789
+    chat_id: 854962001
 
 # Powercalc
 powercalc:
 
-# InfluxDB Integration
-influxdb:
-  host: 192.168.8.12
-  port: 8086
-  database: homeassistant
-  username: !secret influxdb_username
-  password: !secret influxdb_password
-  max_retries: 3
-  default_measurement: state
+recorder:
+  purge_keep_days: 365

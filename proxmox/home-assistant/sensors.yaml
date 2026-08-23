@@ -1,0 +1,7 @@
+- platform: history_stats
+  name: Grid Supply Hours Fixed
+  entity_id: binary_sensor.grid_presence_virtual
+  state: "on"
+  type: time
+  start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+  end: "{{ now() }}"
