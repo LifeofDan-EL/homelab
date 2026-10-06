@@ -16,7 +16,6 @@ services:
       - 6767:6767 # Bazarr Web UI
       - 8787:8787 # Readarr Web UI
       - 8191:8191 # FlareSolverr
-      - 5800:5800 # JDownloader Web UI
       - 6881:6881 # TCP
       - 6881:6881/udp # UDP
     volumes:
@@ -37,10 +36,6 @@ services:
   jdownloader:
     image: jlesage/jdownloader-2:latest
     container_name: jdownloader
-    network_mode: "service:gluetun"
-    depends_on:
-      gluetun:
-        condition: service_healthy
     environment:
       - PUID=0
       - PGID=0
@@ -48,6 +43,20 @@ services:
     volumes:
       - /opt/stacks/jdownloader/config:/config
       - ${DATA_LOCATION}:/data
+    ports:
+      - 5800:5800
+    restart: unless-stopped
+
+  jdownloader-bridge:
+    image: jdownloader-bridge:latest
+    container_name: jdownloader-bridge
+    environment:
+      - MYJD_EMAIL=${MYJD_EMAIL}
+      - MYJD_PASSWORD=${MYJD_PASSWORD}
+      - MYJD_DEVICE_NAME=${MYJD_DEVICE_NAME}
+      - BRIDGE_TOKEN=${BRIDGE_TOKEN}
+    ports:
+      - 4000:4000
     restart: unless-stopped
 
   qbittorrent:

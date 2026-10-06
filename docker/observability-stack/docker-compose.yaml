@@ -61,6 +61,28 @@ services:
       run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     networks:
       - monitor_net
+  influxdb:
+    image: influxdb:3.11.2-core
+    container_name: influxdb
+    restart: always
+    command:
+      - influxdb3
+      - serve
+      - --node-id=influx3-docker
+      - --object-store=file
+      - --data-dir=/var/lib/influxdb3/data
+      - --plugin-dir=/var/lib/influxdb3/plugins
+      - --http-bind=0.0.0.0:8181
+      - --admin-token-file=/var/lib/influxdb3/admin-token.json
+    ports:
+      - "8181:8181"
+    volumes:
+      - influxdb_data:/var/lib/influxdb3/data
+      - influxdb_plugins:/var/lib/influxdb3/plugins
+      - /root/observability/influxdb/admin-token.json:/var/lib/influxdb3/admin-token.json:ro
+    networks:
+      - monitor_net
+
 volumes:
   uptime_data:
     external: true
@@ -69,6 +91,8 @@ volumes:
   grafana_data:
   loki_data:
   alloy_data:
+  influxdb_data:
+  influxdb_plugins:
 networks:
   monitor_net:
     driver: bridge

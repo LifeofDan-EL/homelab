@@ -17,6 +17,7 @@ NOW=$(date +"%H-%M-%S")
 TEMP_DIR="$BACKUP_ROOT/$TODAY/$NOW"
 RCLONE_DEST="$REMOTE_NAME:$BUCKET_NAME"
 EXIT_CODE=0
+UPLOAD_OK=0
 
 mkdir -p "$TEMP_DIR"
 echo "[$(date)] Starting Stack-Organized Backup..."
@@ -89,20 +90,12 @@ start_containers() {
 
 # =============================================================
 # --- 4. STACK BACKUPS ----------------------------------------
+# (Qdrant, Kavita and Komga intentionally removed)
 # =============================================================
 
-# -- 4A. QDRANT -----------------------------------------------
+# -- 4A. SURE STACK -------------------------------------------
 echo ""
-echo "[$(date)] [1/7] Backing up Qdrant Stack..."
-stop_containers "qdrant"
-
-backup_volume "n8n-stack_qdrant_data"   "$TEMP_DIR/qdrant"
-
-start_containers "qdrant"
-
-# -- 4B. SURE STACK -------------------------------------------
-echo ""
-echo "[$(date)] [2/7] Backing up Sure Stack..."
+echo "[$(date)] [1/5] Backing up Sure Stack..."
 stop_containers "sure_web" "sure_worker" "sure_db" "sure_redis" "sure_backup"
 
 backup_volume "sure_app_postgres_data"  "$TEMP_DIR/sure"
@@ -112,37 +105,27 @@ backup_host_dir "/opt/sure-data/backups/last" "$TEMP_DIR/sure" "sure_local_backu
 
 start_containers "sure_db" "sure_redis" "sure_web" "sure_worker" "sure_backup"
 
-# -- 4C. SPEEDTEST TRACKER ------------------------------------
+# -- 4B. SPEEDTEST TRACKER ------------------------------------
 echo ""
-echo "[$(date)] [3/7] Backing up Speedtest Tracker Stack..."
+echo "[$(date)] [2/5] Backing up Speedtest Tracker Stack..."
 stop_containers "speedtest-tracker"
 
 backup_host_dir "/opt/stacks/speedtest/data" "$TEMP_DIR/speedtest" "speedtest_data"
 
 start_containers "speedtest-tracker"
 
-# -- 4D. N8N SOLAR POSTGRES -----------------------------------
+# -- 4C. N8N SOLAR POSTGRES -----------------------------------
 echo ""
-echo "[$(date)] [4/7] Backing up N8N Solar Postgres..."
+echo "[$(date)] [3/5] Backing up N8N Solar Postgres..."
 stop_containers "solar_db"
 
 backup_volume "n8n-stack_postgres_data" "$TEMP_DIR/n8n_solar"
 
 start_containers "solar_db"
 
-# -- 4E. COMIC STACK ------------------------------------------
+# -- 4D. N8N APP DATA -----------------------------------------
 echo ""
-echo "[$(date)] [5/7] Backing up Comic Stack..."
-stop_containers "kavita" "komga"
-
-backup_volume "comic-stack_kavita_config" "$TEMP_DIR/comic"
-backup_volume "comic-stack_komga_config"  "$TEMP_DIR/comic"
-
-start_containers "kavita" "komga"
-
-# -- 4F. N8N APP DATA -------------------------------------------
-echo ""
-echo "[$(date)] [6/7] Backing up N8N App Data..."
+echo "[$(date)] [4/5] Backing up N8N App Data..."
 stop_containers "n8n" "n8n_redis"
 
 backup_volume "n8n-stack_n8n_data"    "$TEMP_DIR/n8n_appdata"
@@ -150,9 +133,9 @@ backup_volume "n8n-stack_redis_data"  "$TEMP_DIR/n8n_appdata"
 
 start_containers "n8n" "n8n_redis"
 
-# -- 4G. DOCUMENSO --------------------------------------------
+# -- 4E. DOCUMENSO --------------------------------------------
 echo ""
-echo "[$(date)] [7/7] Backing up Documenso Stack..."
+echo "[$(date)] [5/5] Backing up Documenso Stack..."
 stop_containers "documenso-documenso-1" "documenso-database-1"
 
 backup_volume "documenso_database" "$TEMP_DIR/documenso"
@@ -217,6 +200,7 @@ else
 
     if [ $? -eq 0 ]; then
         echo "   Upload Successful"
+        UPLOAD_OK=1
         rm -rf "$BACKUP_ROOT/$TODAY"
         rm -f "$MASTER_TAR" "$MASTER_GPG"
         echo "[$(date)] Cleanup Complete"
@@ -227,19 +211,25 @@ else
 fi
 
 # --- 8. RETENTION CLEANUP ------------------------------------
-echo ""
-echo "[$(date)] Pruning old backups from R2 (keeping last 30 days)..."
-RETENTION_DAYS=30
+RETENTION_DAYS=7
+MIN_KEEP=3
 CUTOFF=$(date -d "$RETENTION_DAYS days ago" +"%Y-%m-%d")
 
-rclone lsd "$RCLONE_DEST" | while read -r line; do
-    DIR=$(echo "$line" | awk '{print $NF}')
-    if [[ "$DIR" < "$CUTOFF" ]]; then
-        echo "   Deleting old backup: $DIR"
-        rclone purge "$RCLONE_DEST/$DIR"
-    fi
-done
-echo "[$(date)] Retention cleanup done."
+echo ""
+if [ "$UPLOAD_OK" != "1" ]; then
+    echo "[$(date)] Skipping prune: today's upload did not succeed."
+else
+    echo "[$(date)] Pruning R2 backups older than $CUTOFF (keeping at least $MIN_KEEP)..."
+    mapfile -t DATED < <(rclone lsf --dirs-only "$RCLONE_DEST" | tr -d '/' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort)
+    TOTAL=${#DATED[@]}
+    for DIR in "${DATED[@]}"; do
+        if [[ "$DIR" < "$CUTOFF" ]] && [ "$TOTAL" -gt "$MIN_KEEP" ]; then
+            echo "   Deleting old backup: $DIR"
+            rclone purge "$RCLONE_DEST/$DIR" && TOTAL=$((TOTAL-1))
+        fi
+    done
+    echo "[$(date)] Retention cleanup done."
+fi
 
 # --- 9. FINAL STATUS ------------------------------------------
 echo ""
