@@ -59,14 +59,12 @@ graph TD
             LXC_Vault["LXC 102: Vaultwarden"]
             LXC_Jelly["LXC 107: Jellyfin"]
             VM_OMV["VM 106: OMV"]
-            LXC_OpenClaw["LXC 109: OpenClaw"]
-            LXC_Hermes["LXC 111: Hermes Agent"]
-            LXC_SureTest["sure-test LXC"]
+            LXC_Hermes["LXC 109: Hermes Agent"]
+            LXC_SureTest["LXC 111: Sure (test)"]
         end
 
         %% Business Apps
         subgraph Business_Apps ["Business Apps"]
-            LXC_Odoo["LXC 112: Odoo"]
             LXC_ERPNext["LXC 113: ERPNext"]
         end
 
@@ -105,7 +103,7 @@ graph TD
     Router --> LXC_Docker
     Router --> LXC_Z2M
     Router --> LXC_Vault
-    Router --> LXC_Odoo
+    Router --> LXC_ERPNext
     Router --> Container_QuikDB
     Router --> App_Coolify
 ```
